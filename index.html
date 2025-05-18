@@ -14,13 +14,13 @@
             background-color: #0F172A; 
             color: #E2E8F0; 
             overflow-x: hidden;
-            overscroll-behavior-y: contain; /* Prevent pull-to-refresh on mobile */
+            overscroll-behavior-y: contain; 
         }
-        /* Ensure html and body take full height and no margin for mobile */
         html, body {
             height: 100%;
             margin: 0;
             padding: 0;
+            -webkit-text-size-adjust: 100%; /* Prevent text scaling on mobile */
         }
         .font-arcade {
             font-family: 'Press Start 2P', cursive;
@@ -32,7 +32,7 @@
         .control-panel-section {
             background-color: #1E293B; 
             border-radius: 0.75rem;
-            padding: 1rem; /* Slightly reduced padding for mobile */
+            padding: 1rem; 
             margin-bottom: 1rem;
             box-shadow: 0 10px 25px rgba(0,0,0,0.4);
             border: 1px solid #334155; 
@@ -43,7 +43,7 @@
             color: #94A3B8; 
             text-transform: uppercase;
             letter-spacing: 0.075em; 
-            font-size: 0.75rem; /* Slightly smaller for mobile */
+            font-size: 0.75rem; 
             border-bottom: 1px solid #334155;
             padding-bottom: 0.5rem;
             margin-bottom: 0.75rem;
@@ -62,9 +62,9 @@
             align-items: center;
             justify-content: center;
             padding: 0.4rem; 
-            font-size: 0.65rem; /* Smaller base font for buttons */
+            font-size: 0.65rem; 
             line-height: 1.1; 
-            -webkit-tap-highlight-color: transparent; /* Remove tap highlight on mobile */
+            -webkit-tap-highlight-color: transparent; 
         }
         .sound-pad .key-hint, .synth-key .key-hint {
             font-size: 0.55rem;
@@ -88,7 +88,7 @@
         .sound-pad:hover, .synth-key:hover, .genre-btn:hover, .preset-btn:hover, .loop-btn:hover, .viz-btn:hover {
             background-color: #475569; 
             border-color: #64748B;
-            transform: translateY(-1px); /* Reduced hover lift */
+            transform: translateY(-1px); 
             box-shadow: 0 2px 8px rgba(0,0,0,0.2);
         }
         .sound-pad:active, .synth-key:active, .genre-btn:active, .preset-btn:active, .loop-btn:active, .viz-btn:active {
@@ -102,7 +102,7 @@
             background-color: #8B5CF6; 
             border-color: #7C3AED; 
             color: #FFFFFF;
-            box-shadow: 0 0 10px rgba(139, 92, 246, 0.4); /* Softer glow */
+            box-shadow: 0 0 10px rgba(139, 92, 246, 0.4); 
         }
         
         .loop-btn#record-loop-btn.recording {
@@ -113,7 +113,7 @@
         }
         @keyframes pulse-red {
             0% { box-shadow: 0 0 0 0 rgba(244, 63, 94, 0.7); }
-            70% { box-shadow: 0 0 0 8px rgba(244, 63, 94, 0); } /* Smaller pulse */
+            70% { box-shadow: 0 0 0 8px rgba(244, 63, 94, 0); } 
             100% { box-shadow: 0 0 0 0 rgba(244, 63, 94, 0); }
         }
 
@@ -121,13 +121,13 @@
             background-color: #020617; 
             border-radius: 0.5rem;
             overflow: hidden; 
-            border: 1px solid #8B5CF6; /* Thinner border */
+            border: 1px solid #8B5CF6; 
             box-shadow: 0 0 15px rgba(139, 92, 246, 0.3); 
         }
-        #visualizer-canvas { display: block; width: 100%; height: 100%; }
+        #visualizer-canvas { display: block; width: 100%; height: 100%; touch-action: none; /* Prevent default touch actions on canvas */ }
 
         .btn-primary { 
-            background-color: #8B5CF6; color: white; padding: 0.6rem 1.1rem; /* Adjusted padding */
+            background-color: #8B5CF6; color: white; padding: 0.6rem 1.1rem; 
             border-radius: 0.375rem; font-weight: 600; transition: all 0.2s;
             border: 1px solid #7C3AED;
         }
@@ -151,15 +151,18 @@
         input[type="range"]::-webkit-slider-thumb:hover,
         input[type="range"]::-moz-range-thumb:hover { background: #C4B5FD; } 
 
-        ::-webkit-scrollbar { width: 10px; } /* Thinner scrollbar */
+        ::-webkit-scrollbar { width: 10px; } 
         ::-webkit-scrollbar-track { background: #1E293B; }
         ::-webkit-scrollbar-thumb { background: #475569; border-radius: 5px; border: 2px solid #1E293B; }
         ::-webkit-scrollbar-thumb:hover { background: #64748B; }
         
-        /* Ensure the main app container can scroll if content overflows on small screens */
         #app-content {
-            overflow-y: auto; /* Allow vertical scroll for app content if needed */
-            max-height: 100vh; /* Ensure it doesn't exceed viewport height */
+            overflow-y: auto; 
+            max-height: 100vh; 
+            width: 100%; /* Ensure app content takes full width */
+        }
+        .main-container {
+            width: 100%;
         }
     </style>
 </head>
@@ -167,7 +170,7 @@
 
     <div id="start-screen" class="fixed inset-0 bg-black bg-opacity-95 flex flex-col items-center justify-center z-50 p-4 touch-manipulation">
         <h1 class="text-3xl sm:text-4xl md:text-5xl main-title-font mb-8 text-center">EDM Beat Factory</h1>
-        <button id="start-button" class="main-title-font text-lg sm:text-xl bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-6 rounded-lg shadow-xl transform hover:scale-105 transition-transform duration-150 border-2 border-purple-400 hover:border-purple-300">
+        <button id="start-button" class="main-title-font text-lg sm:text-xl bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-6 rounded-lg shadow-xl transform hover:scale-105 active:scale-100 transition-transform duration-150 border-2 border-purple-400 hover:border-purple-300">
             Tap to Start Audio
         </button>
         <p class="mt-6 text-gray-400 text-xs sm:text-sm font-['Inter']">User interaction required to enable audio.</p>
@@ -214,9 +217,9 @@
                 <section class="control-panel-section">
                     <h2 class="section-title">Visualizer Select</h2>
                     <div class="grid grid-cols-2 sm:grid-cols-3 gap-1.5 sm:gap-2"> 
-                        <button data-viz="shapes" class="viz-btn active-viz">Shapes</button>
+                        <button data-viz="bars" class="viz-btn active-viz">Bars</button> {/* Default to Bars */}
+                        <button data-viz="shapes" class="viz-btn">Shapes</button>
                         <button data-viz="tunnel" class="viz-btn">Tunnel</button>
-                        <button data-viz="bars" class="viz-btn">Bars</button>
                         <button data-viz="twistTunnel" class="viz-btn">Twist Tunnel</button>
                         <button data-viz="fractalTree" class="viz-btn">Fractal Tree</button>
                         <button data-viz="waveLines" class="viz-btn">Wave Lines</button>
@@ -236,8 +239,8 @@
                 </section>
             </div>
 
-            <div class="lg:col-span-8 control-panel-section" style="min-height: 300px; sm:min-height: 400px; height: 85vh; max-height: 950px;">
-                 <h2 id="visualizer-title" class="section-title text-center">Visual Core: Shapes</h2>
+            <div class="lg:col-span-8 control-panel-section" style="min-height: 300px; height: 85vh; max-height: 950px;">
+                <h2 id="visualizer-title" class="section-title text-center">Visual Core: Bars</h2>
                 <div id="visualizer-container" class="w-full h-[calc(100%-2.5rem)]">
                     <canvas id="visualizer-canvas"></canvas>
                 </div>
@@ -270,23 +273,100 @@
             const genreInstrumentMappings = { /* ... (Unchanged from previous version) ... */ edm: { drumPads: [ { id: "kick-pad", label: "Kick", sound: "kick", keyHint: "Q" }, { id: "snare-pad", label: "Snare", sound: "snare", keyHint: "W" }, { id: "hihat-pad", label: "HiHat", sound: "hihat", keyHint: "E" }, { id: "clap-pad", label: "Clap", sound: "clap", keyHint: "A" }, { id: "tom-pad", label: "Tom", sound: "tom", keyHint: "S" }, { id: "cymbal-pad", label: "Cymbal", sound: "cymbal", keyHint: "D" } ], melodyKeys: [ { label: "C4", note: "C4", keyHint: "Z" }, { label: "D4", note: "D4", keyHint: "X" }, { label: "E4", note: "E4", keyHint: "C" }, { label: "F4", note: "F4", keyHint: "V" }, { label: "G4", note: "G4", keyHint: "B" }, { label: "A4", note: "A4", keyHint: "N" }, { label: "B4", note: "B4", keyHint: "M" }, { label: "C5", note: "C5", keyHint: "," } ], synthVoicings: { kick: { pitchDecay: 0.07, envelope: { attack: 0.001, decay: 0.4, sustain: 0.01, release: 0.3 } }, snare: { noise: { type: 'white', playbackRate: 1.5 }, envelope: { attack: 0.002, decay: 0.12, sustain: 0 } }, hihat: { frequency: 350, envelope: { attack: 0.001, decay: 0.04, release: 0.01 }, harmonicity: 4.1 }, mainSynth: { harmonicity: 1.5, modulationIndex: 7, envelope: { attack: 0.005, decay: 0.3, sustain: 0.2, release: 0.6 } } } }, rap: { drumPads: [ { id: "kick-pad", label: "808 Kick", sound: "kick", keyHint: "Q" }, { id: "snare-pad", label: "Snare", sound: "snare", keyHint: "W" }, { id: "hihat-pad", label: "ClosedHat", sound: "hihat", keyHint: "E" }, { id: "clap-pad", label: "Clap", sound: "clap", keyHint: "A" }, { id: "tom-pad", label: "OpenHat", sound: "cymbal", keyHint: "S" }, { id: "cymbal-pad", label: "FX/Tom", sound: "tom", keyHint: "D" } ], melodyKeys: [ { label: "C3", note: "C3", keyHint: "Z" }, { label: "Eb3", note: "Eb3", keyHint: "X" }, { label: "F3", note: "F3", keyHint: "C" }, { label: "G3", note: "G3", keyHint: "V" }, { label: "Bb3", note: "Bb3", keyHint: "B" }, { label: "C4", note: "C4", keyHint: "N" }, { label: "Eb4", note: "Eb4", keyHint: "M" }, { label: "F4", note: "F4", keyHint: "," } ], synthVoicings: { kick: { pitchDecay: 0.1, octaves: 3, envelope: { attack: 0.001, decay: 0.6, sustain: 0.01, release: 0.5 } }, snare: { noise: { type: 'pink', playbackRate: 1 }, envelope: { attack: 0.001, decay: 0.1, sustain: 0 } }, hihat: { frequency: 400, envelope: { attack: 0.001, decay: 0.02, release: 0.01 }, harmonicity: 5.0 }, mainSynth: { harmonicity: 2, modulationIndex: 10, envelope: { attack: 0.01, decay: 0.5, sustain: 0.1, release: 0.8 }, oscillator: {type: "sawtooth"} } } }, rock: { drumPads: [ { id: "kick-pad", label: "Kick", sound: "kick", keyHint: "Q" }, { id: "snare-pad", label: "Snare", sound: "snare", keyHint: "W" }, { id: "hihat-pad", label: "ClosedHat", sound: "hihat", keyHint: "E" }, { id: "clap-pad", label: "Crash", sound: "cymbal", keyHint: "A" }, { id: "tom-pad", label: "Hi Tom", sound: "tom", keyHint: "S" }, { id: "cymbal-pad", label: "Floor Tom", sound: "kick", keyHint: "D" } ], melodyKeys: [ { label: "E2", note: "E2", keyHint: "Z" }, { label: "G2", note: "G2", keyHint: "X" }, { label: "A2", note: "A2", keyHint: "C" }, { label: "C3", note: "C3", keyHint: "V" }, { label: "D3", note: "D3", keyHint: "B" }, { label: "E3", note: "E3", keyHint: "N" }, { label: "G3", note: "G3", keyHint: "M" }, { label: "A3", note: "A3", keyHint: "," } ], synthVoicings: { kick: { pitchDecay: 0.05, octaves: 5, envelope: { attack: 0.002, decay: 0.2, sustain: 0, release: 0.1 } }, snare: { noise: { type: 'white', playbackRate: 2 }, envelope: { attack: 0.001, decay: 0.08, sustain: 0 } }, hihat: { frequency: 300, envelope: { attack: 0.001, decay: 0.05, release: 0.02 }, harmonicity: 3.5, resonance: 3000 }, mainSynth: { harmonicity: 1, modulationIndex: 1, oscillator: {type: "fatsquare"}, envelope: { attack: 0.01, decay: 0.2, sustain: 0.5, release: 0.3 } } } }, jazz: { drumPads: [ { id: "kick-pad", label: "Kick", sound: "kick", keyHint: "Q" }, { id: "snare-pad", label: "Snare", sound: "snare", keyHint: "W" }, { id: "hihat-pad", label: "ClosedHat", sound: "hihat", keyHint: "E" }, { id: "clap-pad", label: "Ride Cym", sound: "rideCymbal", keyHint: "A" }, { id: "tom-pad", label: "Hi Tom", sound: "tom", keyHint: "S" }, { id: "cymbal-pad", label: "Brush", sound: "clap", keyHint: "D" } ], melodyKeys: [ { label: "C4", note: "C4", keyHint: "Z" }, { label: "E4", note: "E4", keyHint: "X" }, { label: "G4", note: "G4", keyHint: "C" }, { label: "Bb4", note: "Bb4", keyHint: "V" }, { label: "D5", note: "D5", keyHint: "B" }, { label: "F5", note: "F5", keyHint: "N" }, { label: "A5", note: "A5", keyHint: "M" }, { label: "C6", note: "C6", keyHint: "," } ], synthVoicings: { kick: { pitchDecay: 0.08, octaves: 6, envelope: { attack: 0.005, decay: 0.15, sustain: 0.01, release: 0.1 } }, snare: { noise: { type: 'pink', playbackRate: 0.8 }, envelope: { attack: 0.005, decay: 0.07, sustain: 0 } }, hihat: { frequency: 250, envelope: { attack: 0.002, decay: 0.03, release: 0.01 }, harmonicity: 3.0, resonance: 1500 }, rideCymbal: { frequency: 300, envelope: { attack: 0.01, decay: 0.4, release: 0.3 }, harmonicity: 5.0, modulationIndex: 15, resonance: 4000 }, mainSynth: { harmonicity: 1.0, modulationIndex: 0.5, oscillator: {type: "sine"}, envelope: { attack: 0.02, decay: 0.4, sustain: 0.3, release: 0.5 } } } }, pop: { drumPads: [ { id: "kick-pad", label: "Kick", sound: "kick", keyHint: "Q" }, { id: "snare-pad", label: "Snare", sound: "snare", keyHint: "W" }, { id: "hihat-pad", label: "HiHat", sound: "hihat", keyHint: "E" }, { id: "clap-pad", label: "Clap", sound: "clap", keyHint: "A" }, { id: "tom-pad", label: "E. Tom", sound: "tom", keyHint: "S" }, { id: "cymbal-pad", label: "FX/Cym", sound: "cymbal", keyHint: "D" } ], melodyKeys: [ { label: "C4", note: "C4", keyHint: "Z" }, { label: "D4", note: "D4", keyHint: "X" }, { label: "E4", note: "E4", keyHint: "C" }, { label: "F4", note: "F4", keyHint: "V" }, { label: "G4", note: "G4", keyHint: "B" }, { label: "A4", note: "A4", keyHint: "N" }, { label: "B4", note: "B4", keyHint: "M" }, { label: "C5", note: "C5", keyHint: "," } ], synthVoicings: { kick: { pitchDecay: 0.06, envelope: { attack: 0.001, decay: 0.3, sustain: 0.01, release: 0.25 } }, snare: { noise: { type: 'white', playbackRate: 1.2 }, envelope: { attack: 0.001, decay: 0.1, sustain: 0 } }, clap: { envelope: { attack: 0.001, decay: 0.09, sustain: 0, release: 0.04 } }, mainSynth: { harmonicity: 1.2, modulationIndex: 5, oscillator: {type: "triangle8"}, envelope: { attack: 0.01, decay: 0.2, sustain: 0.4, release: 0.4 } } } } };
             const allPresetBeats = { /* ... (Unchanged preset beats with melody structures) ... */ edm: { "House": { drums: [{t:"0:0:0",s:"kick"},{t:"0:0:2",s:"hihat"},{t:"0:1:0",s:"snare"},{t:"0:1:0",s:"hihat"},{t:"0:1:2",s:"hihat"},{t:"0:2:0",s:"kick"},{t:"0:2:2",s:"hihat"},{t:"0:3:0",s:"snare"},{t:"0:3:0",s:"hihat"},{t:"0:3:2",s:"hihat"}], melody: [{t:"0:0:0",n:"C3",d:"4n"}, {t:"0:1:0",n:"E3",d:"4n"}, {t:"0:2:0",n:"G3",d:"4n"}, {t:"0:3:0",n:"E3",d:"4n"}] }, "Techno": { drums: [{t:"0:0:0",s:"kick"},{t:"0:0:2",s:"hihat"},{t:"0:1:0",s:"kick"},{t:"0:1:2",s:"hihat"},{t:"0:1:2",s:"snare"},{t:"0:2:0",s:"kick"},{t:"0:2:2",s:"hihat"},{t:"0:3:0",s:"kick"},{t:"0:3:2",s:"hihat"},{t:"0:3:2",s:"snare"}], melody: [{t:"0:0:0",n:"A2",d:"2n"}, {t:"0:2:0",n:"C3",d:"2n"}] }, "Dubstep": { drums: [{t:"0:0:0",s:"kick"},{t:"0:0:3",s:"hihat"},{t:"0:1:0",s:"hihat"},{t:"0:1:2",s:"kick"},{t:"0:1:3",s:"hihat"},{t:"0:2:0",s:"snare"},{t:"0:2:2",s:"hihat"},{t:"0:2:3",s:"hihat"},{t:"0:3:0",s:"hihat"},{t:"0:3:2",s:"kick"},{t:"0:3:3",s:"hihat"}], melody: [{t:"0:0:0",n:"F2",d:"2n"},{t:"0:1:0",n:"F2",d:"8n"},{t:"0:1:2",n:"G#2",d:"4n"}] }, "Trance": { drums: [{t:"0:0:0",s:"kick"},{t:"0:0:2",s:"hihat"},{t:"0:1:0",s:"kick"},{t:"0:1:2",s:"hihat"},{t:"0:1:0",s:"clap"},{t:"0:2:0",s:"kick"},{t:"0:2:2",s:"hihat"},{t:"0:3:0",s:"kick"},{t:"0:3:2",s:"hihat"},{t:"0:3:0",s:"clap"}], melody: [{t:"0:0:0",n:"A3",d:"4n"},{t:"0:1:0",n:"C4",d:"4n"},{t:"0:2:0",n:"E4",d:"4n"},{t:"0:3:0",n:"G3",d:"4n"}] }, "Future Bass": { drums: [{t:"0:0:0",s:"kick"},{t:"0:0:3",s:"hihat"},{t:"0:1:0",s:"clap"},{t:"0:1:2",s:"hihat"},{t:"0:2:0",s:"kick"},{t:"0:2:1",s:"kick"},{t:"0:2:3",s:"hihat"},{t:"0:3:0",s:"clap"},{t:"0:3:2",s:"hihat"},{t:"0:3:3",s:"kick"}], melody: [{t:"0:0:0",n:"C4",d:"8n"},{t:"0:0:2",n:"E4",d:"8n"},{t:"0:1:0",n:"G4",d:"4n"},{t:"0:2:0",n:"A#4",d:"2n"}] } }, rap: { "Boom Bap": { drums: [{t:"0:0:0",s:"kick"}, {t:"0:0:2",s:"hihat"}, {t:"0:1:0",s:"snare"},{t:"0:1:2",s:"hihat"}, {t:"0:1:3",s:"kick"},{t:"0:2:0",s:"kick"}, {t:"0:2:2",s:"hihat"}, {t:"0:2:3",s:"hihat"},{t:"0:3:0",s:"snare"}, {t:"0:3:2",s:"hihat"}] }, "Trap Rap": { drums: [{t:"0:0:0",s:"kick"}, {t:"0:0:0",s:"hihat"}, {t:"0:0:1",s:"hihat"}, {t:"0:0:2",s:"hihat"}, {t:"0:0:3",s:"hihat"}, {t:"0:1:0",s:"hihat"}, {t:"0:1:1",s:"hihat"}, {t:"0:1:2",s:"kick"}, {t:"0:1:2",s:"hihat"}, {t:"0:1:3",s:"hihat"},{t:"0:2:0",s:"clap"}, {t:"0:2:0",s:"hihat"}, {t:"0:2:1",s:"hihat"}, {t:"0:2:2",s:"kick"},{t:"0:2:2",s:"hihat"}, {t:"0:2:3",s:"hihat"},{t:"0:3:0",s:"hihat"}, {t:"0:3:1",s:"hihat"}, {t:"0:3:2",s:"hihat"}, {t:"0:3:3",s:"hihat"}, {t:"0:3:3",s:"kick"}], melody: [{t:"0:0:0",n:"C2",d:"4n"}, {t:"0:1:2",n:"C2",d:"8n"}, {t:"0:2:0",n:"Eb2",d:"4n"}, {t:"0:3:2",n:"C2",d:"8n"}]} }, rock: { "Basic Rock": { drums: [{t:"0:0:0",s:"kick"},{t:"0:0:2",s:"hihat"},{t:"0:1:0",s:"snare"},{t:"0:1:2",s:"hihat"},{t:"0:2:0",s:"kick"},{t:"0:2:2",s:"hihat"},{t:"0:3:0",s:"snare"},{t:"0:3:2",s:"hihat"}] }, "Punk Rock": { drums: [{t:"0:0:0",s:"kick"},{t:"0:0:0",s:"hihat"},{t:"0:0:2",s:"hihat"},{t:"0:1:0",s:"snare"},{t:"0:1:0",s:"hihat"},{t:"0:1:2",s:"hihat"},{t:"0:2:0",s:"kick"},{t:"0:2:0",s:"hihat"},{t:"0:2:2",s:"hihat"},{t:"0:3:0",s:"snare"},{t:"0:3:0",s:"hihat"},{t:"0:3:2",s:"hihat"}] } }, jazz: { "Swing": { drums: [{t:"0:0:0",s:"rideCymbal"},{t:"0:0:2",s:"kick"},{t:"0:0:3",s:"rideCymbal"},{t:"0:1:1",s:"rideCymbal"},{t:"0:1:2",s:"snare"},{t:"0:2:0",s:"rideCymbal"},{t:"0:2:2",s:"kick"},{t:"0:2:3",s:"rideCymbal"},{t:"0:3:1",s:"rideCymbal"},{t:"0:3:2",s:"snare"}], melody: [{t:"0:0:0",n:"C4",d:"2n"}, {t:"0:2:0",n:"G4",d:"4n"}, {t:"0:3:0",n:"E4",d:"4n"}] }, "Bossa Nova": { drums: [{t:"0:0:0",s:"kick"},{t:"0:0:2",s:"hihat"},{t:"0:0:3",s:"kick"},{t:"0:1:0",s:"clap"},{t:"0:1:2",s:"hihat"},{t:"0:2:0",s:"kick"},{t:"0:2:2",s:"hihat"},{t:"0:2:3",s:"kick"},{t:"0:3:0",s:"clap"},{t:"0:3:2",s:"hihat"}] } }, pop: { "Modern Pop": { drums: [{t:"0:0:0",s:"kick"},{t:"0:1:0",s:"clap"},{t:"0:1:2",s:"kick"},{t:"0:1:3",s:"hihat"},{t:"0:2:0",s:"kick"},{t:"0:2:2",s:"hihat"},{t:"0:3:0",s:"clap"},{t:"0:3:2",s:"kick"},{t:"0:3:3",s:"hihat"}], melody: [{t:"0:0:0",n:"C4",d:"4n"},{t:"0:1:0",n:"G4",d:"4n"},{t:"0:2:0",n:"Am4",d:"4n"},{t:"0:3:0",n:"F4",d:"4n"}] }, "80s SynthPop": { drums: [{t:"0:0:0",s:"kick"},{t:"0:0:2",s:"hihat"},{t:"0:1:0",s:"snare"},{t:"0:1:2",s:"hihat"},{t:"0:2:0",s:"kick"},{t:"0:2:2",s:"hihat"},{t:"0:2:3",s:"tom"},{t:"0:3:0",s:"snare"},{t:"0:3:2",s:"hihat"}], melody: [{t:"0:0:0",n:"C3",d:"8n"},{t:"0:0:2",n:"G3",d:"8n"},{t:"0:1:0",n:"E3",d:"8n"},{t:"0:1:2",n:"C3",d:"8n"},{t:"0:2:0",n:"D3",d:"2n"}]} } };
             
-            async function initializeAudio() { /* ... (Unchanged from previous version, ensures synths are created) ... */ if (audioInitialized) return; try { await Tone.start(); console.log("Audio Core Initialized by Tone.start()"); const edmVoicing = genreInstrumentMappings.edm.synthVoicings; kick = new Tone.MembraneSynth(edmVoicing.kick).toDestination(); snare = new Tone.NoiseSynth(edmVoicing.snare).toDestination(); const snareFilter = new Tone.Filter(1800, "bandpass", -12).toDestination(); snare.connect(snareFilter); hihat = new Tone.MetalSynth(edmVoicing.hihat).toDestination(); hihat.volume.value = -12; clap = new Tone.NoiseSynth({noise:{type:'pink'},envelope:{attack:0.001,decay:0.08,sustain:0,release:0.03}}).toDestination(); clap.volume.value = -8; tom = new Tone.MembraneSynth({pitchDecay:0.15,octaves:2.5,envelope:{attack:0.002,decay:0.25,sustain:0.01,release:0.15}}).toDestination(); cymbal = new Tone.MetalSynth({frequency:500,envelope:{attack:0.015,decay:0.6,release:0.3},harmonicity:6.1,modulationIndex:28,resonance:5000,octaves:1.8}).toDestination(); cymbal.volume.value = -15; rideCymbal = new Tone.MetalSynth({frequency: 300, envelope: { attack: 0.01, decay: 0.3, release: 0.2 }, harmonicity: 5.5, modulationIndex: 20, resonance: 3500, octaves: 1.5 }).toDestination(); rideCymbal.volume.value = -14; mainSynth = new Tone.PolySynth(Tone.FMSynth, edmVoicing.mainSynth).toDestination(); mainSynth.volume.value = -9; const metronomeTick = new Tone.MembraneSynth({octaves:9,pitchDecay:0.005,envelope:{attack:0.001,decay:0.05,sustain:0,release:0.01}}).toDestination(); metronomeTick.volume.value = -15; metronomeLoop = new Tone.Loop(time => { metronomeTick.triggerAttackRelease("C5", "32n", time); }, "4n"); Tone.Transport.bpm.value = 120; audioInitialized = true; console.log("All audio components created."); startScreen.style.display = 'none'; appContent.style.display = 'block'; currentViz = 'shapes'; setupVisualizer(); updateMatricesForGenre('edm'); populateRhythmPresets('edm'); document.querySelector('.genre-btn[data-genre-group="edm"]').classList.add('active-genre'); activeGenreButton = document.querySelector('.genre-btn[data-genre-group="edm"]'); setTimeout(() => { window.dispatchEvent(new Event('resize')); console.log("Resize event dispatched for visualizer."); }, 150); } catch (error) { console.error("Error during audio initialization:", error); const errorMsg = document.createElement('p'); errorMsg.textContent = "Could not initialize audio. Please refresh and try again, or check browser permissions."; errorMsg.className = "text-red-500 mt-4"; startScreen.appendChild(errorMsg); } }
-            const initScreenInteraction = async () => { /* ... (same) ... */ await initializeAudio(); startButton.removeEventListener('click', initScreenInteraction); startScreen.removeEventListener('click', initScreenInteraction); window.removeEventListener('keydown', initScreenInteractionKey); };
-            const initScreenInteractionKey = async (e) => { /* ... (same) ... */ if (document.activeElement === startButton && (e.key === 'Enter' || e.key === ' ')) { await initializeAudio(); } else if (document.activeElement !== startButton) { await initializeAudio(); } startButton.removeEventListener('click', initScreenInteraction); startScreen.removeEventListener('click', initScreenInteraction); window.removeEventListener('keydown', initScreenInteractionKey);  };
-            startButton.addEventListener('click', initScreenInteraction);
-            startScreen.addEventListener('click', initScreenInteraction); 
-            window.addEventListener('keydown', initScreenInteractionKey); 
+            async function initializeAudio() { 
+                if (audioInitialized) return; 
+                console.log("Attempting to initialize audio...");
+                try { 
+                    // On mobile, Tone.start() MUST be called in a user-initiated event (e.g. a click or tap)
+                    // The startButton event listener handles this.
+                    await Tone.start(); 
+                    console.log("Tone.start() successful. Audio Context is active.");
+                    
+                    const edmVoicing = genreInstrumentMappings.edm.synthVoicings; 
+                    kick = new Tone.MembraneSynth(edmVoicing.kick).toDestination(); 
+                    snare = new Tone.NoiseSynth(edmVoicing.snare).toDestination(); 
+                    const snareFilter = new Tone.Filter(1800, "bandpass", -12).toDestination(); 
+                    snare.connect(snareFilter); 
+                    hihat = new Tone.MetalSynth(edmVoicing.hihat).toDestination(); 
+                    hihat.volume.value = -12; 
+                    clap = new Tone.NoiseSynth({
+                        noise: {type: 'pink'},
+                        envelope: {attack: 0.001, decay: 0.08, sustain: 0, release: 0.03}
+                    }).toDestination(); 
+                    clap.volume.value = -8; 
+                    tom = new Tone.MembraneSynth({pitchDecay: 0.15, octaves: 2.5, envelope: {attack: 0.002, decay: 0.25, sustain: 0.01, release: 0.15}}).toDestination(); 
+                    cymbal = new Tone.MetalSynth({frequency: 500, envelope: {attack: 0.015, decay: 0.6, release: 0.3}, harmonicity: 6.1, modulationIndex: 28, resonance: 5000, octaves: 1.8}).toDestination(); 
+                    cymbal.volume.value = -15; 
+                    rideCymbal = new Tone.MetalSynth({frequency: 300, envelope: { attack: 0.01, decay: 0.3, release: 0.2 }, harmonicity: 5.5, modulationIndex: 20, resonance: 3500, octaves: 1.5 }).toDestination(); 
+                    rideCymbal.volume.value = -14; 
+                    mainSynth = new Tone.PolySynth(Tone.FMSynth, edmVoicing.mainSynth).toDestination(); 
+                    mainSynth.volume.value = -9; 
+                    
+                    const metronomeTick = new Tone.MembraneSynth({
+                        octaves: 9,
+                        pitchDecay: 0.005,
+                        envelope: {attack: 0.001, decay: 0.05, sustain: 0, release: 0.01}
+                    }).toDestination(); 
+                    metronomeTick.volume.value = -15; 
+                    metronomeLoop = new Tone.Loop(time => { metronomeTick.triggerAttackRelease("C5", "32n", time); }, "4n"); 
+                    Tone.Transport.bpm.value = 120; 
+                    audioInitialized = true; 
+                    console.log("All audio components created."); 
+                    
+                    startScreen.style.display = 'none'; 
+                    appContent.style.display = 'block'; 
+                    
+                    currentViz = 'bars'; // Default to a simpler visualizer for mobile
+                    setupVisualizer(); 
+                    
+                    updateMatricesForGenre('edm'); 
+                    populateRhythmPresets('edm'); 
+                    document.querySelector('.genre-btn[data-genre-group="edm"]').classList.add('active-genre'); 
+                    activeGenreButton = document.querySelector('.genre-btn[data-genre-group="edm"]'); 
+                    
+                    setTimeout(() => { window.dispatchEvent(new Event('resize')); console.log("Resize event dispatched for visualizer."); }, 150); 
+                } catch (error) { 
+                    console.error("Error during audio initialization:", error); 
+                    const errorMsg = document.createElement('p'); 
+                    errorMsg.textContent = "Audio initialization failed. Please tap the screen again or refresh. Check browser permissions if issue persists."; 
+                    errorMsg.className = "text-red-500 mt-4 text-center"; 
+                    startScreen.appendChild(errorMsg); 
+                } 
+            }
+            // Ensure this is the ONLY event listener that calls initializeAudio
+            startButton.addEventListener('click', initializeAudio, { once: true }); // { once: true } ensures it only runs once
 
             // --- Three.js Visualizer Setup ---
             let scene, camera, renderer, analyserNode; 
             let clock = new THREE.Clock();
             const visualizerContainer = document.getElementById('visualizer-container');
             const visualizerTitle = document.getElementById('visualizer-title');
-            let currentViz = 'shapes'; 
+            let currentViz = 'bars'; // Default to bars for mobile
             let vizObjects = {}; 
             let animationFrameId = null;
 
-            function initBaseThreeJS() { /* ... (same as before) ... */ if (!visualizerContainer) { console.error("Visualizer container not found!"); return null; } const aspect = visualizerContainer.clientWidth / visualizerContainer.clientHeight; camera = new THREE.PerspectiveCamera(75, aspect, 0.1, 2000); camera.position.set(0, 1, 7); renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('visualizer-canvas'), antialias: true, alpha: true }); renderer.setSize(visualizerContainer.clientWidth, visualizerContainer.clientHeight); renderer.setPixelRatio(window.devicePixelRatio); renderer.setClearColor(0x000000, 0); analyserNode = new Tone.Analyser('fft', 128); Tone.getDestination().connect(analyserNode); return { camera, renderer, analyserNode }; }
+            function initBaseThreeJS() {
+                if (!visualizerContainer) {
+                    console.error("Visualizer container not found!");
+                    return null;
+                }
+                const aspect = visualizerContainer.clientWidth / visualizerContainer.clientHeight;
+                camera = new THREE.PerspectiveCamera(75, aspect, 0.1, 2000);
+                camera.position.set(0, 1, 7);
+                renderer = new THREE.WebGLRenderer({
+                    canvas: document.getElementById('visualizer-canvas'),
+                    antialias: true,
+                    alpha: true,
+                    powerPreference: 'high-performance'
+                });
+                renderer.setSize(visualizerContainer.clientWidth, visualizerContainer.clientHeight);
+                // Limit pixel ratio for better mobile performance
+                renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+                renderer.setClearColor(0x000000, 0);
+                analyserNode = new Tone.Analyser('fft', 64); // Reduced FFT size for mobile
+                Tone.getDestination().connect(analyserNode);
+                return { camera, renderer, analyserNode };
+            }
             function disposeSceneObjects() { /* ... (same as before) ... */ if (scene) { while(scene.children.length > 0){ const object = scene.children[0]; if(object.geometry) object.geometry.dispose(); if(object.material) { if (Array.isArray(object.material)) { object.material.forEach(material => material.dispose()); } else { object.material.dispose(); } } scene.remove(object); } } vizObjects = {}; }
             
             function setupVisualizer() {
@@ -298,8 +378,15 @@
                 disposeSceneObjects(); 
                 scene = new THREE.Scene(); 
 
-                const ambientLight = new THREE.AmbientLight(0xffffff, 0.6); scene.add(ambientLight);
-                const directionalLight = new THREE.DirectionalLight(0xffffff, 0.9); directionalLight.position.set(5, 10, 7.5); scene.add(directionalLight);
+                // Simplified lighting for mobile
+                const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
+                scene.add(ambientLight);
+
+                // Choose simpler visualizer for mobile by default
+                if (window.innerWidth <= 768) {
+                    currentViz = 'bars';
+                    document.querySelector('.viz-btn[data-viz="bars"]').classList.add('active-viz');
+                }
 
                 switch (currentViz) {
                     case 'shapes': visualizerTitle.textContent = "Visual Core: Shapes"; setupShapesViz(); break;
@@ -311,175 +398,40 @@
                     case 'pipeDream': visualizerTitle.textContent = "Visual Core: Pipe Dream"; setupPipeDreamViz(); break;
                     case 'galaxy': visualizerTitle.textContent = "Visual Core: Galaxy"; setupGalaxyViz(); break;
                 }
-                if (!animationFrameId) { // Start animation loop if it's not already running
-                    clock = new THREE.Clock(); // Reset clock for fresh animation start
+                if (!animationFrameId) { 
+                    clock = new THREE.Clock(); 
                     animate(); 
                 }
             }
             
-            function setupShapesViz() { /* ... (same as before) ... */ camera.position.set(0, 1, 7); camera.lookAt(new THREE.Vector3(0,0,0)); const pointLight = new THREE.PointLight(0x8B5CF6, 1.5, 100); pointLight.position.set(-5, -2, 5); scene.add(pointLight); const cubeMaterial = new THREE.MeshStandardMaterial({ color: 0xff00ff, emissive: 0x330033, roughness: 0.4, metalness: 0.2 }); const sphereMaterial = new THREE.MeshStandardMaterial({ color: 0x00ffff, roughness: 0.2, metalness: 0.5 }); const torusMaterial = new THREE.MeshStandardMaterial({ color: 0xffff00, roughness: 0.6, metalness: 0.3 }); vizObjects.cube = new THREE.Mesh(new THREE.BoxGeometry(1.5, 1.5, 1.5), cubeMaterial); vizObjects.cube.position.x = -2.5; scene.add(vizObjects.cube); vizObjects.sphere = new THREE.Mesh(new THREE.SphereGeometry(1, 32, 32), sphereMaterial); vizObjects.sphere.position.x = 2.5; scene.add(vizObjects.sphere); vizObjects.torus = new THREE.Mesh(new THREE.TorusGeometry(0.8, 0.3, 16, 100), torusMaterial); vizObjects.torus.position.y = -0.5; scene.add(vizObjects.torus); const particleCount = 300; const particleGeometry = new THREE.BufferGeometry(); const positions = new Float32Array(particleCount * 3); for (let i = 0; i < particleCount * 3; i++) { positions[i] = (Math.random() - 0.5) * 15; } particleGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3)); const particleMaterial = new THREE.PointsMaterial({ color: 0x94A3B8, size: 0.07, transparent: true, opacity: 0.4 }); vizObjects.particles = new THREE.Points(particleGeometry, particleMaterial); scene.add(vizObjects.particles); }
-            function setupTunnelViz() { /* ... (same as before) ... */ camera.position.set(0, 0, 0); camera.lookAt(new THREE.Vector3(0,0,-1)); vizObjects.rings = []; const ringCount = 30; const ringRadius = 3; const ringSpacing = 2; const ringMaterial = new THREE.MeshBasicMaterial({ wireframe: true, side: THREE.DoubleSide }); for (let i = 0; i < ringCount; i++) { const geometry = new THREE.TorusGeometry(ringRadius, 0.1, 8, 32); const ring = new THREE.Mesh(geometry, ringMaterial.clone()); ring.position.z = -i * ringSpacing; scene.add(ring); vizObjects.rings.push(ring); } vizObjects.tunnelSpeed = 0.1; }
+            function setupShapesViz() { /* ... (same as before) ... */ camera.position.set(0, 1, 7); camera.lookAt(new THREE.Vector3(0,0,0)); const pointLight = new THREE.PointLight(0x8B5CF6, 1.5, 100); pointLight.position.set(-5, -2, 5); scene.add(pointLight); const cubeMaterial = new THREE.MeshStandardMaterial({ color: 0xff00ff, emissive: 0x330033, roughness: 0.4, metalness: 0.2 }); const sphereMaterial = new THREE.MeshStandardMaterial({ color: 0x00ffff, roughness: 0.2, metalness: 0.5 }); const torusMaterial = new THREE.MeshStandardMaterial({ color: 0xffff00, roughness: 0.6, metalness: 0.3 }); vizObjects.cube = new THREE.Mesh(new THREE.BoxGeometry(1.5, 1.5, 1.5), cubeMaterial); vizObjects.cube.position.x = -2.5; scene.add(vizObjects.cube); vizObjects.sphere = new THREE.Mesh(new THREE.SphereGeometry(1, 32, 32), sphereMaterial); vizObjects.sphere.position.x = 2.5; scene.add(vizObjects.sphere); vizObjects.torus = new THREE.Mesh(new THREE.TorusGeometry(0.8, 0.3, 16, 100), torusMaterial); vizObjects.torus.position.y = -0.5; scene.add(vizObjects.torus); const particleCount = 200; /* Reduced for mobile */ const particleGeometry = new THREE.BufferGeometry(); const positions = new Float32Array(particleCount * 3); for (let i = 0; i < particleCount * 3; i++) { positions[i] = (Math.random() - 0.5) * 15; } particleGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3)); const particleMaterial = new THREE.PointsMaterial({ color: 0x94A3B8, size: 0.07, transparent: true, opacity: 0.4 }); vizObjects.particles = new THREE.Points(particleGeometry, particleMaterial); scene.add(vizObjects.particles); }
+            function setupTunnelViz() { /* ... (same as before) ... */ camera.position.set(0, 0, 0); camera.lookAt(new THREE.Vector3(0,0,-1)); vizObjects.rings = []; const ringCount = 20; /* Reduced */ const ringRadius = 3; const ringSpacing = 2; const ringMaterial = new THREE.MeshBasicMaterial({ wireframe: true, side: THREE.DoubleSide }); for (let i = 0; i < ringCount; i++) { const geometry = new THREE.TorusGeometry(ringRadius, 0.1, 8, 24 /* Reduced segments */); const ring = new THREE.Mesh(geometry, ringMaterial.clone()); ring.position.z = -i * ringSpacing; scene.add(ring); vizObjects.rings.push(ring); } vizObjects.tunnelSpeed = 0.1; }
             function setupBarsViz() { /* ... (same as before) ... */ camera.position.set(0, 2, 10); camera.lookAt(new THREE.Vector3(0,0,0)); analyserNode.type = 'fft'; analyserNode.size = 128; vizObjects.bars = []; const barCount = analyserNode.size / 2; const barWidth = 0.2; const barSpacing = 0.05; const totalWidth = (barWidth + barSpacing) * barCount; for (let i = 0; i < barCount; i++) { const geometry = new THREE.BoxGeometry(barWidth, 0.1, 0.1); const material = new THREE.MeshStandardMaterial({ color: 0x00ffff }); const bar = new THREE.Mesh(geometry, material); bar.position.x = (i * (barWidth + barSpacing)) - totalWidth / 2 + barWidth / 2; scene.add(bar); vizObjects.bars.push(bar); } }
-            function setupTwistTunnelViz() { /* ... (same as before) ... */ camera.position.set(0, 0, 10); camera.lookAt(new THREE.Vector3(0,0,0)); vizObjects.twistSegments = []; const segmentCount = 40; const segmentLength = 1.5; const tunnelRadius = 4; const segmentGeometry = new THREE.BoxGeometry(tunnelRadius * 1.5, tunnelRadius * 1.5, segmentLength); for (let i = 0; i < segmentCount; i++) { const material = new THREE.MeshStandardMaterial({ color: new THREE.Color().setHSL(i / segmentCount, 0.7, 0.5), wireframe: true, opacity: 0.3 + (i % 5) * 0.1, transparent: true }); const segment = new THREE.Mesh(segmentGeometry, material); segment.position.z = -i * (segmentLength * 0.8); scene.add(segment); vizObjects.twistSegments.push(segment); } vizObjects.twistTunnelSpeed = 5; vizObjects.twistAngle = 0; }
-            function setupFractalTreeViz() { /* ... (same as before) ... */ camera.position.set(0, 5, 20); camera.lookAt(new THREE.Vector3(0, 3, 0)); vizObjects.fractalBranches = new THREE.Group(); scene.add(vizObjects.fractalBranches); vizObjects.maxDepth = 3; vizObjects.initialBranchLength = 3; }
-            function createBranch(parent, length, level, angleY, angleZ, material) { /* ... (same as before) ... */ if (level > vizObjects.maxDepth) return; const branchGeometry = new THREE.CylinderGeometry(0.1 * (1 - level / (vizObjects.maxDepth + 1)), 0.15 * (1 - level / (vizObjects.maxDepth + 1)), length, 8); const branch = new THREE.Mesh(branchGeometry, material.clone()); branch.position.y = length / 2; const branchGroup = new THREE.Group(); branchGroup.add(branch); branchGroup.position.y = parent instanceof THREE.Group ? parent.userData.length || 0 : 0; branchGroup.rotation.y = angleY; branchGroup.rotation.z = angleZ; parent.add(branchGroup); branchGroup.userData.length = length; if (!vizObjects.allBranches) vizObjects.allBranches = []; vizObjects.allBranches.push(branchGroup); return branchGroup; }
+            function setupTwistTunnelViz() { /* ... (same as before) ... */ camera.position.set(0, 0, 10); camera.lookAt(new THREE.Vector3(0,0,0)); vizObjects.twistSegments = []; const segmentCount = 30; /* Reduced */ const segmentLength = 1.5; const tunnelRadius = 4; const segmentGeometry = new THREE.BoxGeometry(tunnelRadius * 1.5, tunnelRadius * 1.5, segmentLength); for (let i = 0; i < segmentCount; i++) { const material = new THREE.MeshStandardMaterial({ color: new THREE.Color().setHSL(i / segmentCount, 0.7, 0.5), wireframe: true, opacity: 0.3 + (i % 5) * 0.1, transparent: true }); const segment = new THREE.Mesh(segmentGeometry, material); segment.position.z = -i * (segmentLength * 0.8); scene.add(segment); vizObjects.twistSegments.push(segment); } vizObjects.twistTunnelSpeed = 5; vizObjects.twistAngle = 0; }
+            function setupFractalTreeViz() { /* ... (same as before, maxDepth kept low) ... */ camera.position.set(0, 5, 20); camera.lookAt(new THREE.Vector3(0, 3, 0)); vizObjects.fractalBranches = new THREE.Group(); scene.add(vizObjects.fractalBranches); vizObjects.maxDepth = 2; /* Reduced for mobile */ vizObjects.initialBranchLength = 2.5; }
+            function createBranch(parent, length, level, angleY, angleZ, material) { /* ... (same as before) ... */ if (level > vizObjects.maxDepth) return; const branchGeometry = new THREE.CylinderGeometry(0.1 * (1 - level / (vizObjects.maxDepth + 1)), 0.15 * (1 - level / (vizObjects.maxDepth + 1)), length, 6 /* Reduced segments */); const branch = new THREE.Mesh(branchGeometry, material.clone()); branch.position.y = length / 2; const branchGroup = new THREE.Group(); branchGroup.add(branch); branchGroup.position.y = parent instanceof THREE.Group ? parent.userData.length || 0 : 0; branchGroup.rotation.y = angleY; branchGroup.rotation.z = angleZ; parent.add(branchGroup); branchGroup.userData.length = length; if (!vizObjects.allBranches) vizObjects.allBranches = []; vizObjects.allBranches.push(branchGroup); return branchGroup; }
             
-            // --- New Visualizers ---
-            function setupWaveLinesViz() {
-                camera.position.set(0, 0, 8);
-                camera.lookAt(new THREE.Vector3(0,0,0));
-                analyserNode.type = 'waveform'; // Use waveform data
-                analyserNode.size = 256; // More points for smoother line
-
-                vizObjects.lines = [];
-                const lineCount = 3; // Number of wave lines
-                for (let i = 0; i < lineCount; i++) {
-                    const material = new THREE.LineBasicMaterial({ color: new THREE.Color().setHSL(i / lineCount, 0.8, 0.6) });
-                    const points = [];
-                    for (let j = 0; j < analyserNode.size; j++) {
-                        points.push(new THREE.Vector3((j / analyserNode.size - 0.5) * 10, 0, 0));
-                    }
-                    const geometry = new THREE.BufferGeometry().setFromPoints(points);
-                    const line = new THREE.Line(geometry, material);
-                    line.position.z = -i * 1.5; // Stagger lines in Z
-                    scene.add(line);
-                    vizObjects.lines.push(line);
-                }
-            }
-
-            function setupPipeDreamViz() {
-                camera.position.set(0, 5, 15);
-                camera.lookAt(new THREE.Vector3(0,0,0));
-                analyserNode.type = 'fft';
-                analyserNode.size = 64; // 32 bins
-
-                vizObjects.pipes = [];
-                const pipeCount = 16; // Less pipes than bars for distinct visual
-                const radius = 4;
-                for (let i = 0; i < pipeCount; i++) {
-                    const angle = (i / pipeCount) * Math.PI * 2;
-                    const geometry = new THREE.CylinderGeometry(0.2, 0.2, 0.1, 16); // Start short
-                    const material = new THREE.MeshStandardMaterial({ color: new THREE.Color().setHSL(i / pipeCount, 0.7, 0.5) });
-                    const pipe = new THREE.Mesh(geometry, material);
-                    pipe.position.set(Math.cos(angle) * radius, 0, Math.sin(angle) * radius);
-                    pipe.rotation.x = Math.PI / 2; // Lay them flat initially, will grow upwards
-                    scene.add(pipe);
-                    vizObjects.pipes.push(pipe);
-                }
-            }
-            
-            function setupGalaxyViz() {
-                camera.position.set(0, 2, 10);
-                camera.lookAt(new THREE.Vector3(0,0,0));
-                vizObjects.particleSystems = [];
-                const systemCount = 3; // Create a few distinct particle systems
-                const colors = [0xff00ff, 0x00ffff, 0xffff00];
-
-                for (let i = 0; i < systemCount; i++) {
-                    const particleCount = 500 + i * 200; // Vary count
-                    const geometry = new THREE.BufferGeometry();
-                    const positions = new Float32Array(particleCount * 3);
-                    const velocities = new Float32Array(particleCount * 3); // For movement
-
-                    for (let j = 0; j < particleCount * 3; j+=3) {
-                        positions[j] = (Math.random() - 0.5) * (10 + i * 2); // Spread
-                        positions[j+1] = (Math.random() - 0.5) * (10 + i * 2);
-                        positions[j+2] = (Math.random() - 0.5) * (10 + i * 2);
-                        velocities[j] = (Math.random() - 0.5) * 0.02;
-                        velocities[j+1] = (Math.random() - 0.5) * 0.02;
-                        velocities[j+2] = (Math.random() - 0.5) * 0.02;
-                    }
-                    geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-                    geometry.setAttribute('velocity', new THREE.BufferAttribute(velocities, 3)); // Store velocities
-
-                    const material = new THREE.PointsMaterial({ 
-                        color: colors[i % colors.length], 
-                        size: 0.05 + i * 0.02, 
-                        transparent: true, 
-                        opacity: 0.5 + i * 0.1,
-                        blending: THREE.AdditiveBlending // For a brighter, galaxy-like effect
-                    });
-                    const points = new THREE.Points(geometry, material);
-                    scene.add(points);
-                    vizObjects.particleSystems.push(points);
-                }
-            }
-
+            function setupWaveLinesViz() { /* ... (same as before) ... */ camera.position.set(0, 0, 8); camera.lookAt(new THREE.Vector3(0,0,0)); analyserNode.type = 'waveform'; analyserNode.size = 256; vizObjects.lines = []; const lineCount = 2; /* Reduced */ for (let i = 0; i < lineCount; i++) { const material = new THREE.LineBasicMaterial({ color: new THREE.Color().setHSL(i / lineCount, 0.8, 0.6) }); const points = []; for (let j = 0; j < analyserNode.size; j++) { points.push(new THREE.Vector3((j / analyserNode.size - 0.5) * 10, 0, 0)); } const geometry = new THREE.BufferGeometry().setFromPoints(points); const line = new THREE.Line(geometry, material); line.position.z = -i * 1.5; scene.add(line); vizObjects.lines.push(line); } }
+            function setupPipeDreamViz() { /* ... (same as before) ... */ camera.position.set(0, 5, 15); camera.lookAt(new THREE.Vector3(0,0,0)); analyserNode.type = 'fft'; analyserNode.size = 64; vizObjects.pipes = []; const pipeCount = 12; /* Reduced */ const radius = 4; for (let i = 0; i < pipeCount; i++) { const angle = (i / pipeCount) * Math.PI * 2; const geometry = new THREE.CylinderGeometry(0.2, 0.2, 0.1, 12 /* Reduced segments */); const material = new THREE.MeshStandardMaterial({ color: new THREE.Color().setHSL(i / pipeCount, 0.7, 0.5) }); const pipe = new THREE.Mesh(geometry, material); pipe.position.set(Math.cos(angle) * radius, 0, Math.sin(angle) * radius); pipe.rotation.x = Math.PI / 2; scene.add(pipe); vizObjects.pipes.push(pipe); } }
+            function setupGalaxyViz() { /* ... (same as before, reduced particle count) ... */ camera.position.set(0, 2, 10); camera.lookAt(new THREE.Vector3(0,0,0)); vizObjects.particleSystems = []; const systemCount = 2; /* Reduced */ const colors = [0xff00ff, 0x00ffff, 0xffff00]; for (let i = 0; i < systemCount; i++) { const particleCount = 300 + i * 100; /* Reduced */ const geometry = new THREE.BufferGeometry(); const positions = new Float32Array(particleCount * 3); const velocities = new Float32Array(particleCount * 3); for (let j = 0; j < particleCount * 3; j+=3) { positions[j] = (Math.random() - 0.5) * (8 + i * 2); /* Reduced spread */ positions[j+1] = (Math.random() - 0.5) * (8 + i * 2); positions[j+2] = (Math.random() - 0.5) * (8 + i * 2); velocities[j] = (Math.random() - 0.5) * 0.015; velocities[j+1] = (Math.random() - 0.5) * 0.015; velocities[j+2] = (Math.random() - 0.5) * 0.015; } geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3)); geometry.setAttribute('velocity', new THREE.BufferAttribute(velocities, 3)); const material = new THREE.PointsMaterial({ color: colors[i % colors.length], size: 0.04 + i * 0.015, transparent: true, opacity: 0.4 + i * 0.1, blending: THREE.AdditiveBlending }); const points = new THREE.Points(geometry, material); scene.add(points); vizObjects.particleSystems.push(points); } }
 
             let lastTreeUpdateTime = 0; const treeUpdateInterval = 0.5; 
-            function animate() { 
-                animationFrameId = requestAnimationFrame(animate); 
-                const delta = clock.getDelta(); 
-                const elapsedTime = clock.getElapsedTime(); 
-                if (!analyserNode || !audioInitialized || !scene) return; 
-                
-                const fftData = analyserNode.type === 'fft' ? analyserNode.getValue() : []; // FFT or empty
-                const waveformData = analyserNode.type === 'waveform' ? analyserNode.getValue() : new Float32Array(analyserNode.size); // Waveform or default
-
-                const normFftData = fftData.map(db => Math.max(0, Math.min(1, (db + 100) / 100)));
-                const overallEnergy = normFftData.length > 0 ? normFftData.reduce((a, b) => a + b, 0) / normFftData.length : 0;
-                const bassEnergy = normFftData.length > 0 ? normFftData.slice(0, Math.floor(normFftData.length * 0.1)).reduce((a,b) => a+b,0) / (Math.floor(normFftData.length * 0.1) || 1) : 0;
-                const midEnergy = normFftData.length > 0 ? normFftData.slice(Math.floor(normFftData.length * 0.2), Math.floor(normFftData.length * 0.5)).reduce((a,b) => a+b,0) / (Math.floor(normFftData.length * 0.3) || 1) : 0;
-                const highEnergy = normFftData.length > 0 ? normFftData.slice(Math.floor(normFftData.length * 0.6)).reduce((a,b) => a+b,0) / (Math.floor(normFftData.length * 0.4) || 1) : 0;
-
-                if (currentViz === 'shapes' && vizObjects.cube) { /* ... (shapes animation - same) ... */ vizObjects.cube.rotation.x += (0.1 + midEnergy * 0.5) * delta; vizObjects.cube.rotation.y += (0.15 + midEnergy * 0.6) * delta; vizObjects.cube.material.emissiveIntensity = overallEnergy * 5; vizObjects.sphere.position.y = bassEnergy * 2 - 1; vizObjects.sphere.scale.setScalar(1 + bassEnergy * 0.5); vizObjects.torus.rotation.z += (0.2 + highEnergy * 1.0) * delta; vizObjects.torus.material.color.setHSL(highEnergy * 0.7, 1, 0.5 + midEnergy * 0.2); vizObjects.particles.rotation.y += 0.05 * delta; vizObjects.particles.material.opacity = Math.min(0.7, 0.1 + overallEnergy * 0.8); camera.position.x = Math.sin(elapsedTime * 0.05) * 0.5; camera.position.z = 7 + Math.cos(elapsedTime * 0.07) * 0.5; camera.lookAt(scene.position); } 
-                else if (currentViz === 'tunnel' && vizObjects.rings) { /* ... (tunnel animation - same) ... */ camera.position.z -= (vizObjects.tunnelSpeed + overallEnergy * 0.3) * delta * 10; vizObjects.rings.forEach((ring, index) => { ring.scale.setScalar(1 + normFftData[index % normFftData.length] * 2); ring.material.color.setHSL(normFftData[index % normFftData.length] * 0.8, 0.8, 0.6); if (ring.position.z > camera.position.z + 2) { ring.position.z -= vizObjects.rings.length * 2; } }); } 
-                else if (currentViz === 'bars' && vizObjects.bars) { /* ... (bars animation - same) ... */ vizObjects.bars.forEach((bar, i) => { const barHeight = Math.max(0.01, normFftData[i] * 5); bar.scale.y = barHeight; bar.position.y = barHeight / 2 - 0.5; bar.material.color.setHSL(i / vizObjects.bars.length, 1, 0.5 + normFftData[i] * 0.5); }); camera.position.x = Math.sin(elapsedTime * 0.03) * 2; camera.lookAt(new THREE.Vector3(0,0,0)); }
-                else if (currentViz === 'twistTunnel' && vizObjects.twistSegments) { /* ... (twistTunnel animation - same) ... */ vizObjects.twistAngle += (0.1 + midEnergy * 1.5) * delta; camera.position.z -= (vizObjects.twistTunnelSpeed + bassEnergy * 10) * delta; camera.rotation.z = Math.sin(elapsedTime * 0.2) * 0.1; vizObjects.twistSegments.forEach((segment, index) => { segment.rotation.z = vizObjects.twistAngle + index * 0.1 + bassEnergy * 0.5; segment.rotation.x = highEnergy * 0.3; segment.scale.setScalar(0.8 + midEnergy * 0.4); segment.material.color.setHSL((index / vizObjects.twistSegments.length + elapsedTime * 0.05) % 1, 0.6 + highEnergy * 0.4, 0.4 + midEnergy * 0.3); if (segment.position.z > camera.position.z + 10) { segment.position.z -= vizObjects.twistSegments.length * (1.5 * 0.8); } }); } 
-                else if (currentViz === 'fractalTree' && vizObjects.fractalBranches) { /* ... (fractalTree animation - same) ... */ camera.position.x = Math.sin(elapsedTime * 0.02) * 5; camera.position.y = 5 + Math.cos(elapsedTime * 0.03) * 2; camera.lookAt(vizObjects.fractalBranches.position); if (elapsedTime - lastTreeUpdateTime > treeUpdateInterval && overallEnergy > 0.1) { lastTreeUpdateTime = elapsedTime; while(vizObjects.fractalBranches.children.length > 0){ vizObjects.fractalBranches.remove(vizObjects.fractalBranches.children[0]); } vizObjects.allBranches = []; function growTree(parent, length, level, angleYBase, angleZBase) { if (level > vizObjects.maxDepth || length < 0.1) return; const numBranches = level === 0 ? 1 : (bassEnergy > 0.3 ? 3 : 2); const branchMaterial = new THREE.MeshStandardMaterial({ color: new THREE.Color().setHSL( (level / vizObjects.maxDepth + midEnergy * 0.5) % 1, 0.6 + highEnergy*0.4, 0.3 + overallEnergy*0.4), roughness: 0.7, metalness: 0.1 }); for (let i = 0; i < numBranches; i++) { const newLength = length * (0.6 + Math.random() * 0.2 + bassEnergy * 0.1); const angleY = angleYBase + (Math.random() - 0.5) * Math.PI / 2 * (1 - midEnergy); const angleZ = angleZBase + (i - (numBranches-1)/2) * (Math.PI / (3 + numBranches)) * (1 + highEnergy); const newBranchGroup = createBranch(parent, newLength, level, angleY, angleZ, branchMaterial); if (newBranchGroup) { growTree(newBranchGroup, newLength, level + 1, angleY, angleZ); } } } growTree(vizObjects.fractalBranches, vizObjects.initialBranchLength * (1 + overallEnergy), 0, 0, 0); } vizObjects.fractalBranches.rotation.y += 0.05 * delta; }
-                else if (currentViz === 'waveLines' && vizObjects.lines) {
-                    vizObjects.lines.forEach((line, lineIndex) => {
-                        const positions = line.geometry.attributes.position;
-                        for (let i = 0; i < analyserNode.size; i++) {
-                            const y = waveformData[i] * (2 + lineIndex * 0.5); // Scale and offset lines
-                            positions.setY(i, y);
-                        }
-                        positions.needsUpdate = true;
-                        line.rotation.z += (0.01 + bassEnergy * 0.05) * delta * (lineIndex % 2 === 0 ? 1 : -1);
-                    });
-                     camera.position.z = 8 + Math.sin(elapsedTime * 0.1) * 2;
-                     camera.lookAt(scene.position);
-                } else if (currentViz === 'pipeDream' && vizObjects.pipes) {
-                    vizObjects.pipes.forEach((pipe, i) => {
-                        const scaleFactor = Math.max(0.1, normFftData[i % normFftData.length] * 5);
-                        pipe.scale.y = scaleFactor; // Grow along its local Y (which is world Z due to rotation)
-                        pipe.position.y = scaleFactor / 2 - 2; // Adjust base position
-                        pipe.material.color.setHSL((i / vizObjects.pipes.length + overallEnergy * 0.2) % 1, 0.7, 0.5 + midEnergy * 0.3);
-                        pipe.rotation.y += (0.1 + highEnergy * 0.5) * delta; // Spin
-                    });
-                    camera.position.y = 5 + Math.sin(elapsedTime * 0.05) * 2;
-                    camera.lookAt(new THREE.Vector3(0,0,0));
-                } else if (currentViz === 'galaxy' && vizObjects.particleSystems) {
-                    vizObjects.particleSystems.forEach((system, sysIndex) => {
-                        const positions = system.geometry.attributes.position;
-                        const velocities = system.geometry.attributes.velocity;
-                        const baseSpeed = 0.005 + sysIndex * 0.002;
-                        const energyFactor = 1 + overallEnergy * 5;
-
-                        for (let i = 0; i < positions.count; i++) {
-                            positions.array[i * 3] += velocities.array[i * 3] * energyFactor * delta * 20;
-                            positions.array[i * 3 + 1] += velocities.array[i * 3 + 1] * energyFactor * delta * 20;
-                            positions.array[i * 3 + 2] += velocities.array[i * 3 + 2] * energyFactor * delta * 20;
-
-                            // Boundary check - simple wrap around
-                            if (Math.abs(positions.array[i*3]) > 10) velocities.array[i*3] *= -1;
-                            if (Math.abs(positions.array[i*3+1]) > 10) velocities.array[i*3+1] *= -1;
-                            if (Math.abs(positions.array[i*3+2]) > 10) velocities.array[i*3+2] *= -1;
-                        }
-                        positions.needsUpdate = true;
-                        system.rotation.y += (baseSpeed + bassEnergy * 0.01) * delta;
-                        system.rotation.x += (baseSpeed + midEnergy * 0.005) * delta;
-                        system.material.opacity = Math.min(0.8, 0.2 + overallEnergy * 0.8);
-                    });
-                    camera.position.z = 10 - overallEnergy * 3;
-                    camera.lookAt(scene.position);
+            function animate() { /* ... (Animation logic - unchanged) ... */ animationFrameId = requestAnimationFrame(animate); const delta = clock.getDelta(); const elapsedTime = clock.getElapsedTime(); if (!analyserNode || !audioInitialized || !scene) return; const fftData = analyserNode.type === 'fft' ? analyserNode.getValue() : []; const waveformData = analyserNode.type === 'waveform' ? analyserNode.getValue() : new Float32Array(analyserNode.size); const normFftData = fftData.map(db => Math.max(0, Math.min(1, (db + 100) / 100))); const overallEnergy = normFftData.length > 0 ? normFftData.reduce((a, b) => a + b, 0) / normFftData.length : 0; const bassEnergy = normFftData.length > 0 ? normFftData.slice(0, Math.floor(normFftData.length * 0.1)).reduce((a,b) => a+b,0) / (Math.floor(normFftData.length * 0.1) || 1) : 0; const midEnergy = normFftData.length > 0 ? normFftData.slice(Math.floor(normFftData.length * 0.2), Math.floor(normFftData.length * 0.5)).reduce((a,b) => a+b,0) / (Math.floor(normFftData.length * 0.3) || 1) : 0; const highEnergy = normFftData.length > 0 ? normFftData.slice(Math.floor(normFftData.length * 0.6)).reduce((a,b) => a+b,0) / (Math.floor(normFftData.length * 0.4) || 1) : 0; if (currentViz === 'shapes' && vizObjects.cube) { vizObjects.cube.rotation.x += (0.1 + midEnergy * 0.5) * delta; vizObjects.cube.rotation.y += (0.15 + midEnergy * 0.6) * delta; vizObjects.cube.material.emissiveIntensity = overallEnergy * 5; vizObjects.sphere.position.y = bassEnergy * 2 - 1; vizObjects.sphere.scale.setScalar(1 + bassEnergy * 0.5); vizObjects.torus.rotation.z += (0.2 + highEnergy * 1.0) * delta; vizObjects.torus.material.color.setHSL(highEnergy * 0.7, 1, 0.5 + midEnergy * 0.2); vizObjects.particles.rotation.y += 0.05 * delta; vizObjects.particles.material.opacity = Math.min(0.7, 0.1 + overallEnergy * 0.8); camera.position.x = Math.sin(elapsedTime * 0.05) * 0.5; camera.position.z = 7 + Math.cos(elapsedTime * 0.07) * 0.5; camera.lookAt(scene.position); } else if (currentViz === 'tunnel' && vizObjects.rings) { camera.position.z -= (vizObjects.tunnelSpeed + overallEnergy * 0.3) * delta * 10; vizObjects.rings.forEach((ring, index) => { ring.scale.setScalar(1 + normFftData[index % normFftData.length] * 2); ring.material.color.setHSL(normFftData[index % normFftData.length] * 0.8, 0.8, 0.6); if (ring.position.z > camera.position.z + 2) { ring.position.z -= vizObjects.rings.length * 2; } }); } else if (currentViz === 'bars' && vizObjects.bars) { vizObjects.bars.forEach((bar, i) => { const barHeight = Math.max(0.01, normFftData[i] * 5); bar.scale.y = barHeight; bar.position.y = barHeight / 2 - 0.5; bar.material.color.setHSL(i / vizObjects.bars.length, 1, 0.5 + normFftData[i] * 0.5); }); camera.position.x = Math.sin(elapsedTime * 0.03) * 2; camera.lookAt(new THREE.Vector3(0,0,0)); } else if (currentViz === 'twistTunnel' && vizObjects.twistSegments) { vizObjects.twistAngle += (0.1 + midEnergy * 1.5) * delta; camera.position.z -= (vizObjects.twistTunnelSpeed + bassEnergy * 10) * delta; camera.rotation.z = Math.sin(elapsedTime * 0.2) * 0.1; vizObjects.twistSegments.forEach((segment, index) => { segment.rotation.z = vizObjects.twistAngle + index * 0.1 + bassEnergy * 0.5; segment.rotation.x = highEnergy * 0.3; segment.scale.setScalar(0.8 + midEnergy * 0.4); segment.material.color.setHSL((index / vizObjects.twistSegments.length + elapsedTime * 0.05) % 1, 0.6 + highEnergy * 0.4, 0.4 + midEnergy * 0.3); if (segment.position.z > camera.position.z + 10) { segment.position.z -= vizObjects.twistSegments.length * (1.5 * 0.8); } }); } else if (currentViz === 'fractalTree' && vizObjects.fractalBranches) { camera.position.x = Math.sin(elapsedTime * 0.02) * 5; camera.position.y = 5 + Math.cos(elapsedTime * 0.03) * 2; camera.lookAt(vizObjects.fractalBranches.position); if (elapsedTime - lastTreeUpdateTime > treeUpdateInterval && overallEnergy > 0.1) { lastTreeUpdateTime = elapsedTime; while(vizObjects.fractalBranches.children.length > 0){ vizObjects.fractalBranches.remove(vizObjects.fractalBranches.children[0]); } vizObjects.allBranches = []; function growTree(parent, length, level, angleYBase, angleZBase) { if (level > vizObjects.maxDepth || length < 0.1) return; const numBranches = level === 0 ? 1 : (bassEnergy > 0.3 ? 3 : 2); const branchMaterial = new THREE.MeshStandardMaterial({ color: new THREE.Color().setHSL( (level / vizObjects.maxDepth + midEnergy * 0.5) % 1, 0.6 + highEnergy*0.4, 0.3 + overallEnergy*0.4), roughness: 0.7, metalness: 0.1 }); for (let i = 0; i < numBranches; i++) { const newLength = length * (0.6 + Math.random() * 0.2 + bassEnergy * 0.1); const angleY = angleYBase + (Math.random() - 0.5) * Math.PI / 2 * (1 - midEnergy); const angleZ = angleZBase + (i - (numBranches-1)/2) * (Math.PI / (3 + numBranches)) * (1 + highEnergy); const newBranchGroup = createBranch(parent, newLength, level, angleY, angleZ, branchMaterial); if (newBranchGroup) { growTree(newBranchGroup, newLength, level + 1, angleY, angleZ); } } } growTree(vizObjects.fractalBranches, vizObjects.initialBranchLength * (1 + overallEnergy), 0, 0, 0); } vizObjects.fractalBranches.rotation.y += 0.05 * delta; } else if (currentViz === 'waveLines' && vizObjects.lines) { vizObjects.lines.forEach((line, lineIndex) => { const positions = line.geometry.attributes.position; for (let i = 0; i < analyserNode.size; i++) { const y = waveformData[i] * (2 + lineIndex * 0.5); positions.setY(i, y); } positions.needsUpdate = true; line.rotation.z += (0.01 + bassEnergy * 0.05) * delta * (lineIndex % 2 === 0 ? 1 : -1); }); camera.position.z = 8 + Math.sin(elapsedTime * 0.1) * 2; camera.lookAt(scene.position); } else if (currentViz === 'pipeDream' && vizObjects.pipes) { vizObjects.pipes.forEach((pipe, i) => { const scaleFactor = Math.max(0.1, normFftData[i % normFftData.length] * 5); pipe.scale.y = scaleFactor; pipe.position.y = scaleFactor / 2 - 2; pipe.material.color.setHSL((i / vizObjects.pipes.length + overallEnergy * 0.2) % 1, 0.7, 0.5 + midEnergy * 0.3); pipe.rotation.y += (0.1 + highEnergy * 0.5) * delta; }); camera.position.y = 5 + Math.sin(elapsedTime * 0.05) * 2; camera.lookAt(new THREE.Vector3(0,0,0)); } else if (currentViz === 'galaxy' && vizObjects.particleSystems) { vizObjects.particleSystems.forEach((system, sysIndex) => { const positions = system.geometry.attributes.position; const velocities = system.geometry.attributes.velocity; const baseSpeed = 0.005 + sysIndex * 0.002; const energyFactor = 1 + overallEnergy * 5; for (let i = 0; i < positions.count; i++) { positions.array[i * 3] += velocities.array[i * 3] * energyFactor * delta * 20; positions.array[i * 3 + 1] += velocities.array[i * 3 + 1] * energyFactor * delta * 20; positions.array[i * 3 + 2] += velocities.array[i * 3 + 2] * energyFactor * delta * 20; if (Math.abs(positions.array[i*3]) > 10) velocities.array[i*3] *= -1; if (Math.abs(positions.array[i*3+1]) > 10) velocities.array[i*3+1] *= -1; if (Math.abs(positions.array[i*3+2]) > 10) velocities.array[i*3+2] *= -1; } positions.needsUpdate = true; system.rotation.y += (baseSpeed + bassEnergy * 0.01) * delta; system.rotation.x += (baseSpeed + midEnergy * 0.005) * delta; system.material.opacity = Math.min(0.8, 0.2 + overallEnergy * 0.8); }); camera.position.z = 10 - overallEnergy * 3; camera.lookAt(scene.position); } if (renderer && scene && camera) { renderer.render(scene, camera); } }
+            window.addEventListener('resize', () => {
+                if (camera && renderer && visualizerContainer) {
+                    const newWidth = visualizerContainer.clientWidth;
+                    const newHeight = visualizerContainer.clientHeight;
+                    if (newWidth > 0 && newHeight > 0) {
+                        camera.aspect = newWidth / newHeight;
+                        camera.updateProjectionMatrix();
+                        renderer.setSize(newWidth, newHeight);
+                        // Limit pixel ratio on mobile
+                        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+                    } else {
+                        console.warn("Visualizer container has zero width or height on resize.");
+                    }
                 }
-
-
-                if (renderer && scene && camera) { renderer.render(scene, camera); }
-            }
-            
-            window.addEventListener('resize', () => { /* ... (same) ... */ if (camera && renderer && visualizerContainer) { const newWidth = visualizerContainer.clientWidth; const newHeight = visualizerContainer.clientHeight; if (newWidth > 0 && newHeight > 0) { camera.aspect = newWidth / newHeight; camera.updateProjectionMatrix(); renderer.setSize(newWidth, newHeight); } else { console.warn("Visualizer container has zero width or height on resize."); } } }, false);
+            }, false);
 
             // --- UI Event Listeners & Audio Logic (mostly same) ---
             function applyGenreSynthParameters(genreKey) { /* ... (same) ... */ const voicings = genreInstrumentMappings[genreKey]?.synthVoicings; if (!voicings || !audioInitialized) return; console.log("Applying voicings for genre:", genreKey, voicings); if (voicings.kick && kick) kick.set(voicings.kick); if (voicings.snare && snare) snare.set(voicings.snare); if (voicings.hihat && hihat) hihat.set(voicings.hihat); if (voicings.clap && clap) clap.set(voicings.clap); if (voicings.tom && tom) tom.set(voicings.tom); if (voicings.cymbal && cymbal) cymbal.set(voicings.cymbal); if (voicings.rideCymbal && rideCymbal) rideCymbal.set(voicings.rideCymbal); if (voicings.mainSynth && mainSynth) { mainSynth.set({ voice: Tone.FMSynth, ...voicings.mainSynth }); } }
@@ -503,6 +455,24 @@
             recordLoopBtn.addEventListener('click', toggleRecording); playLoopBtn.addEventListener('click', playUserLoop); clearLoopBtn.addEventListener('click', clearUserLoop);
             window.addEventListener('keydown', (e) => { /* ... (same) ... */ if (!audioInitialized) return; if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable) { return; } const key = e.key.toLowerCase(); const activeElement = document.activeElement; if ( (key === 'enter' || key === ' ') && activeElement && activeElement.tagName === 'BUTTON') { return; } if (keySoundMap[key]) { e.preventDefault(); const soundOrNote = keySoundMap[key]; if (typeof soundOrNote === 'string') { triggerDrumSound(soundOrNote, true); const padEl = document.querySelector(`.sound-pad[data-key="${key}"]`); if(padEl) { padEl.classList.add('temp-active'); setTimeout(() => padEl.classList.remove('temp-active'), 100); } } else if (typeof soundOrNote === 'object' && soundOrNote.type === 'synth') { mainSynth.triggerAttackRelease(soundOrNote.note, "8n"); if (soundOrNote.element) { soundOrNote.element.classList.add('temp-active'); setTimeout(() => soundOrNote.element.classList.remove('temp-active'), 100); } } } });
             const style = document.createElement('style'); /* ... (same) ... */ style.innerHTML = `.temp-active { background-color: #8B5CF6 !important; border-color: #7C3AED !important; color: #FFFFFF !important; transform: translateY(0px) !important; box-shadow: inset 0 2px 4px rgba(0,0,0,0.2) !important; }`; document.head.appendChild(style);
+
+            // Add touch event handling for mobile
+            document.addEventListener('touchstart', (e) => {
+                if (!audioInitialized) return;
+                const touch = e.touches[0];
+                const element = document.elementFromPoint(touch.clientX, touch.clientY);
+                if (element && element.classList.contains('sound-pad')) {
+                    const sound = element.dataset.sound;
+                    if (sound) {
+                        triggerDrumSound(sound, true);
+                    }
+                } else if (element && element.classList.contains('synth-key')) {
+                    const note = element.dataset.note;
+                    if (note) {
+                        mainSynth.triggerAttackRelease(note, "8n");
+                    }
+                }
+            }, { passive: true });
         });
     </script>
 </body>
