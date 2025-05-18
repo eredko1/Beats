@@ -371,10 +371,18 @@
             
             function setupVisualizer() {
                 if (!audioInitialized) { console.warn("Cannot setup visualizer: Audio not ready."); return; }
+                
+                // Cancel any existing animation frame
+                if (animationFrameId) {
+                    cancelAnimationFrame(animationFrameId);
+                    animationFrameId = null;
+                }
+
                 if (!renderer) { 
                     const baseComponents = initBaseThreeJS();
                     if (!baseComponents) return;
                 }
+                
                 disposeSceneObjects(); 
                 scene = new THREE.Scene(); 
 
@@ -382,8 +390,8 @@
                 const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
                 scene.add(ambientLight);
 
-                // Choose simpler visualizer for mobile by default
-                if (window.innerWidth <= 768) {
+                // Only force bars visualizer on mobile if it's the first load
+                if (window.innerWidth <= 768 && !currentViz) {
                     currentViz = 'bars';
                     document.querySelector('.viz-btn[data-viz="bars"]').classList.add('active-viz');
                 }
@@ -398,10 +406,9 @@
                     case 'pipeDream': visualizerTitle.textContent = "Visual Core: Pipe Dream"; setupPipeDreamViz(); break;
                     case 'galaxy': visualizerTitle.textContent = "Visual Core: Galaxy"; setupGalaxyViz(); break;
                 }
-                if (!animationFrameId) { 
-                    clock = new THREE.Clock(); 
-                    animate(); 
-                }
+
+                clock = new THREE.Clock();
+                animate();
             }
             
             function setupShapesViz() { /* ... (same as before) ... */ camera.position.set(0, 1, 7); camera.lookAt(new THREE.Vector3(0,0,0)); const pointLight = new THREE.PointLight(0x8B5CF6, 1.5, 100); pointLight.position.set(-5, -2, 5); scene.add(pointLight); const cubeMaterial = new THREE.MeshStandardMaterial({ color: 0xff00ff, emissive: 0x330033, roughness: 0.4, metalness: 0.2 }); const sphereMaterial = new THREE.MeshStandardMaterial({ color: 0x00ffff, roughness: 0.2, metalness: 0.5 }); const torusMaterial = new THREE.MeshStandardMaterial({ color: 0xffff00, roughness: 0.6, metalness: 0.3 }); vizObjects.cube = new THREE.Mesh(new THREE.BoxGeometry(1.5, 1.5, 1.5), cubeMaterial); vizObjects.cube.position.x = -2.5; scene.add(vizObjects.cube); vizObjects.sphere = new THREE.Mesh(new THREE.SphereGeometry(1, 32, 32), sphereMaterial); vizObjects.sphere.position.x = 2.5; scene.add(vizObjects.sphere); vizObjects.torus = new THREE.Mesh(new THREE.TorusGeometry(0.8, 0.3, 16, 100), torusMaterial); vizObjects.torus.position.y = -0.5; scene.add(vizObjects.torus); const particleCount = 200; /* Reduced for mobile */ const particleGeometry = new THREE.BufferGeometry(); const positions = new Float32Array(particleCount * 3); for (let i = 0; i < particleCount * 3; i++) { positions[i] = (Math.random() - 0.5) * 15; } particleGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3)); const particleMaterial = new THREE.PointsMaterial({ color: 0x94A3B8, size: 0.07, transparent: true, opacity: 0.4 }); vizObjects.particles = new THREE.Points(particleGeometry, particleMaterial); scene.add(vizObjects.particles); }
@@ -443,7 +450,21 @@
             const metronomeButton = document.getElementById('toggle-metronome');
             metronomeButton.addEventListener('click', () => { if (!audioInitialized) return; metronomeOn = !metronomeOn; if (metronomeOn) { Tone.Transport.start(); metronomeLoop.start(0); metronomeButton.textContent = "METRONOME: ON"; metronomeButton.classList.replace('bg-purple-600', 'bg-red-500'); } else { metronomeLoop.stop(); metronomeButton.textContent = "METRONOME: OFF"; metronomeButton.classList.replace('bg-red-500', 'bg-purple-600'); } });
             document.getElementById('preset-stop').addEventListener('click', () => { if (!audioInitialized) return; stopAllBeats(); });
-            document.querySelectorAll('.viz-btn').forEach(button => { button.addEventListener('click', () => { if (!audioInitialized) { console.warn("Audio not ready to change viz."); return; } currentViz = button.dataset.viz; document.querySelectorAll('.viz-btn').forEach(btn => btn.classList.remove('active-viz')); button.classList.add('active-viz'); setupVisualizer(); }); });
+            document.querySelectorAll('.viz-btn').forEach(button => {
+                button.addEventListener('click', () => {
+                    if (!audioInitialized) {
+                        console.warn("Audio not ready to change viz.");
+                        return;
+                    }
+                    const newViz = button.dataset.viz;
+                    if (newViz === currentViz) return;
+                    
+                    currentViz = newViz;
+                    document.querySelectorAll('.viz-btn').forEach(btn => btn.classList.remove('active-viz'));
+                    button.classList.add('active-viz');
+                    setupVisualizer();
+                });
+            });
             function triggerDrumSound(sound, manualTrigger = false, time = Tone.now()) { /* ... (same) ... */ if (!audioInitialized || !kick) { console.warn("triggerDrumSound called before synths are ready."); return; } try { switch(sound) { case 'kick': kick.triggerAttackRelease("C1", "8n", time); break; case 'snare': snare.triggerAttackRelease("4n", time); break; case 'hihat': hihat.triggerAttackRelease("16n", time); break; case 'clap': clap.triggerAttackRelease("8n", time); break; case 'tom': tom.triggerAttackRelease("G1", "8n", time); break; case 'cymbal': cymbal.triggerAttackRelease("2n", time); break; case 'rideCymbal': rideCymbal.triggerAttackRelease("C4", "4n", time); break; } } catch (error) { console.error(`Error playing sound ${sound}:`, error); } if (manualTrigger && isRecording) { recordUserHit(sound); } }
             function recordUserHit(sound) { /* ... (same) ... */ if (!isRecording) return; if (Tone.Transport.state !== "started") Tone.Transport.start(); const sixteenths = Tone.Time("16n").toSeconds(); const transportTimeSeconds = Tone.Transport.seconds; const quantizedSeconds = Math.round(transportTimeSeconds / sixteenths) * sixteenths; const quantizedTransportTimeBBS = Tone.Time(quantizedSeconds).toBarsBeatsSixteenths(); const parts = quantizedTransportTimeBBS.split(':'); const timeInCurrentBarBBS = `0:${parts[1]}:${parts[2]}`; userPattern.push({ time: timeInCurrentBarBBS, sound: sound }); console.log("Recorded:", { time: timeInCurrentBarBBS, sound: sound }); const padElement = document.querySelector(`.sound-pad[data-sound="${sound}"]`); if(padElement){ padElement.classList.add('temp-active'); setTimeout(() => padElement.classList.remove('temp-active'), 100); } }
             function toggleRecording() { /* ... (same) ... */ if (!audioInitialized) { console.warn("Audio not ready for recording."); return; } isRecording = !isRecording; if (isRecording) { userPattern = []; Tone.Transport.start(); recordLoopBtn.textContent = "Stop Rec"; recordLoopBtn.classList.add('recording'); playLoopBtn.disabled = true; clearLoopBtn.disabled = true; stopAllBeats(false); console.log("Recording started..."); } else { recordLoopBtn.textContent = "Record"; recordLoopBtn.classList.remove('recording'); console.log("Recording stopped. Pattern:", userPattern); if (userPattern.length > 0) { playLoopBtn.disabled = false; clearLoopBtn.disabled = false; } } }
