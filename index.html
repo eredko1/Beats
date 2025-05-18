@@ -15,12 +15,17 @@
             color: #E2E8F0; 
             overflow-x: hidden;
             overscroll-behavior-y: contain; 
+            -webkit-overflow-scrolling: touch; /* Enable smooth scrolling on iOS */
+            position: fixed; /* Prevent bounce on iOS */
+            width: 100%;
+            height: 100%;
         }
         html, body {
             height: 100%;
             margin: 0;
             padding: 0;
-            -webkit-text-size-adjust: 100%; /* Prevent text scaling on mobile */
+            -webkit-text-size-adjust: 100%;
+            touch-action: manipulation; /* Prevent double-tap zoom */
         }
         .font-arcade {
             font-family: 'Press Start 2P', cursive;
@@ -36,6 +41,7 @@
             margin-bottom: 1rem;
             box-shadow: 0 10px 25px rgba(0,0,0,0.4);
             border: 1px solid #334155; 
+            touch-action: manipulation;
         }
         .section-title {
             font-family: 'Inter', sans-serif;
@@ -65,6 +71,11 @@
             font-size: 0.65rem; 
             line-height: 1.1; 
             -webkit-tap-highlight-color: transparent; 
+            min-height: 48px; /* Larger touch targets */
+            padding: 0.6rem;
+            font-size: 0.75rem;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
         }
         .sound-pad .key-hint, .synth-key .key-hint {
             font-size: 0.55rem;
@@ -123,6 +134,10 @@
             overflow: hidden; 
             border: 1px solid #8B5CF6; 
             box-shadow: 0 0 15px rgba(139, 92, 246, 0.3); 
+            width: 100%;
+            height: calc(100% - 2.5rem);
+            min-height: 200px;
+            touch-action: none;
         }
         #visualizer-canvas { display: block; width: 100%; height: 100%; touch-action: none; /* Prevent default touch actions on canvas */ }
 
@@ -158,11 +173,16 @@
         
         #app-content {
             overflow-y: auto; 
-            max-height: 100vh; 
-            width: 100%; /* Ensure app content takes full width */
+            height: 100vh; 
+            width: 100%;
+            -webkit-overflow-scrolling: touch;
+            position: relative;
+            padding-bottom: env(safe-area-inset-bottom); /* Support iPhone X+ */
         }
         .main-container {
             width: 100%;
+            min-height: 100%;
+            padding-bottom: 20px; /* Add padding at bottom for better scrolling */
         }
     </style>
 </head>
@@ -277,64 +297,178 @@
                 if (audioInitialized) return; 
                 console.log("Attempting to initialize audio...");
                 try { 
-                    // On mobile, Tone.start() MUST be called in a user-initiated event (e.g. a click or tap)
-                    // The startButton event listener handles this.
-                    await Tone.start(); 
+                    // Create and unlock audio context
+                    const AudioContext = window.webkitAudioContext || window.AudioContext;
+                    const audioContext = new AudioContext();
+                    
+                    // iOS/Android audio unlock
+                    const unlockAudio = async () => {
+                        const buffer = audioContext.createBuffer(1, 1, 22050);
+                        const source = audioContext.createBufferSource();
+                        source.buffer = buffer;
+                        source.connect(audioContext.destination);
+                        source.start(0);
+                        
+                        // Resume audio context
+                        if (audioContext.state === 'suspended') {
+                            await audioContext.resume();
+                        }
+                        
+                        // Create a silent oscillator to keep audio context alive
+                        const oscillator = audioContext.createOscillator();
+                        const gainNode = audioContext.createGain();
+                        gainNode.gain.value = 0;
+                        oscillator.connect(gainNode);
+                        gainNode.connect(audioContext.destination);
+                        oscillator.start();
+                    };
+
+                    await unlockAudio();
+                    
+                    // Initialize Tone.js
+                    await Tone.start();
                     console.log("Tone.start() successful. Audio Context is active.");
                     
-                    const edmVoicing = genreInstrumentMappings.edm.synthVoicings; 
-                    kick = new Tone.MembraneSynth(edmVoicing.kick).toDestination(); 
-                    snare = new Tone.NoiseSynth(edmVoicing.snare).toDestination(); 
-                    const snareFilter = new Tone.Filter(1800, "bandpass", -12).toDestination(); 
-                    snare.connect(snareFilter); 
-                    hihat = new Tone.MetalSynth(edmVoicing.hihat).toDestination(); 
-                    hihat.volume.value = -12; 
+                    // Set up audio processing
+                    Tone.setContext(new Tone.Context({
+                        latencyHint: 'interactive',
+                        lookAhead: 0.1,
+                        updateInterval: 0.016,
+                        clockSource: 'worker'
+                    }));
+
+                    // Create master volume
+                    const masterVolume = new Tone.Volume(-6).toDestination();
+                    
+                    // Initialize synths with mobile-friendly settings
+                    const edmVoicing = genreInstrumentMappings.edm.synthVoicings;
+                    
+                    // Initialize all synths with simpler settings for mobile
+                    kick = new Tone.MembraneSynth({
+                        pitchDecay: 0.05,
+                        octaves: 3,
+                        oscillator: { type: 'sine' },
+                        envelope: { attack: 0.001, decay: 0.2, sustain: 0.01, release: 0.1 }
+                    }).connect(masterVolume);
+                    
+                    snare = new Tone.NoiseSynth({
+                        noise: { type: 'white' },
+                        envelope: { attack: 0.001, decay: 0.1, sustain: 0 }
+                    }).connect(masterVolume);
+                    
+                    hihat = new Tone.MetalSynth({
+                        frequency: 300,
+                        envelope: { attack: 0.001, decay: 0.05, release: 0.01 },
+                        harmonicity: 3.1,
+                        oscillator: { type: 'sine' }
+                    }).connect(masterVolume);
+                    hihat.volume.value = -12;
+                    
                     clap = new Tone.NoiseSynth({
-                        noise: {type: 'pink'},
-                        envelope: {attack: 0.001, decay: 0.08, sustain: 0, release: 0.03}
-                    }).toDestination(); 
-                    clap.volume.value = -8; 
-                    tom = new Tone.MembraneSynth({pitchDecay: 0.15, octaves: 2.5, envelope: {attack: 0.002, decay: 0.25, sustain: 0.01, release: 0.15}}).toDestination(); 
-                    cymbal = new Tone.MetalSynth({frequency: 500, envelope: {attack: 0.015, decay: 0.6, release: 0.3}, harmonicity: 6.1, modulationIndex: 28, resonance: 5000, octaves: 1.8}).toDestination(); 
-                    cymbal.volume.value = -15; 
-                    rideCymbal = new Tone.MetalSynth({frequency: 300, envelope: { attack: 0.01, decay: 0.3, release: 0.2 }, harmonicity: 5.5, modulationIndex: 20, resonance: 3500, octaves: 1.5 }).toDestination(); 
-                    rideCymbal.volume.value = -14; 
-                    mainSynth = new Tone.PolySynth(Tone.FMSynth, edmVoicing.mainSynth).toDestination(); 
-                    mainSynth.volume.value = -9; 
+                        noise: { type: 'white' },
+                        envelope: { attack: 0.001, decay: 0.08, sustain: 0, release: 0.03 }
+                    }).connect(masterVolume);
+                    clap.volume.value = -8;
+                    
+                    tom = new Tone.MembraneSynth({
+                        pitchDecay: 0.15,
+                        octaves: 2.5,
+                        oscillator: { type: 'sine' },
+                        envelope: { attack: 0.002, decay: 0.25, sustain: 0.01, release: 0.15 }
+                    }).connect(masterVolume);
+                    
+                    cymbal = new Tone.MetalSynth({
+                        frequency: 500,
+                        oscillator: { type: 'sine' },
+                        envelope: { attack: 0.015, decay: 0.6, release: 0.3 },
+                        harmonicity: 6.1,
+                        modulationIndex: 28,
+                        resonance: 5000,
+                        octaves: 1.8
+                    }).connect(masterVolume);
+                    cymbal.volume.value = -15;
+                    
+                    rideCymbal = new Tone.MetalSynth({
+                        frequency: 300,
+                        oscillator: { type: 'sine' },
+                        envelope: { attack: 0.01, decay: 0.3, release: 0.2 },
+                        harmonicity: 5.5,
+                        modulationIndex: 20,
+                        resonance: 3500,
+                        octaves: 1.5
+                    }).connect(masterVolume);
+                    rideCymbal.volume.value = -14;
+                    
+                    mainSynth = new Tone.PolySynth(Tone.FMSynth, {
+                        harmonicity: 1.5,
+                        modulationIndex: 7,
+                        oscillator: { type: 'sine' },
+                        envelope: { attack: 0.005, decay: 0.3, sustain: 0.2, release: 0.6 }
+                    }).connect(masterVolume);
+                    mainSynth.volume.value = -9;
                     
                     const metronomeTick = new Tone.MembraneSynth({
                         octaves: 9,
                         pitchDecay: 0.005,
-                        envelope: {attack: 0.001, decay: 0.05, sustain: 0, release: 0.01}
-                    }).toDestination(); 
-                    metronomeTick.volume.value = -15; 
-                    metronomeLoop = new Tone.Loop(time => { metronomeTick.triggerAttackRelease("C5", "32n", time); }, "4n"); 
-                    Tone.Transport.bpm.value = 120; 
-                    audioInitialized = true; 
-                    console.log("All audio components created."); 
+                        oscillator: { type: 'sine' },
+                        envelope: { attack: 0.001, decay: 0.05, sustain: 0, release: 0.01 }
+                    }).connect(masterVolume);
+                    metronomeTick.volume.value = -15;
                     
-                    startScreen.style.display = 'none'; 
-                    appContent.style.display = 'block'; 
+                    metronomeLoop = new Tone.Loop(time => {
+                        metronomeTick.triggerAttackRelease("C5", "32n", time);
+                    }, "4n");
                     
-                    currentViz = 'bars'; // Default to a simpler visualizer for mobile
-                    setupVisualizer(); 
+                    // Initialize with a small delay
+                    setTimeout(() => {
+                        Tone.Transport.bpm.value = 120;
+                        audioInitialized = true;
+                        console.log("All audio components created and initialized.");
+                        
+                        startScreen.style.display = 'none';
+                        appContent.style.display = 'block';
+                        
+                        currentViz = 'bars';
+                        setupVisualizer();
+                        
+                        updateMatricesForGenre('edm');
+                        populateRhythmPresets('edm');
+                        document.querySelector('.genre-btn[data-genre-group="edm"]').classList.add('active-genre');
+                        activeGenreButton = document.querySelector('.genre-btn[data-genre-group="edm"]');
+                        
+                        window.dispatchEvent(new Event('resize'));
+                    }, 100);
                     
-                    updateMatricesForGenre('edm'); 
-                    populateRhythmPresets('edm'); 
-                    document.querySelector('.genre-btn[data-genre-group="edm"]').classList.add('active-genre'); 
-                    activeGenreButton = document.querySelector('.genre-btn[data-genre-group="edm"]'); 
-                    
-                    setTimeout(() => { window.dispatchEvent(new Event('resize')); console.log("Resize event dispatched for visualizer."); }, 150); 
-                } catch (error) { 
-                    console.error("Error during audio initialization:", error); 
-                    const errorMsg = document.createElement('p'); 
-                    errorMsg.textContent = "Audio initialization failed. Please tap the screen again or refresh. Check browser permissions if issue persists."; 
-                    errorMsg.className = "text-red-500 mt-4 text-center"; 
-                    startScreen.appendChild(errorMsg); 
-                } 
+                } catch (error) {
+                    console.error("Error during audio initialization:", error);
+                    const errorMsg = document.createElement('p');
+                    errorMsg.textContent = "Audio initialization failed. Please tap the screen again or refresh. Check browser permissions if issue persists.";
+                    errorMsg.className = "text-red-500 mt-4 text-center";
+                    startScreen.appendChild(errorMsg);
+                }
             }
-            // Ensure this is the ONLY event listener that calls initializeAudio
-            startButton.addEventListener('click', initializeAudio, { once: true }); // { once: true } ensures it only runs once
+
+            // Add touch event listeners for mobile
+            document.addEventListener('touchstart', async (e) => {
+                if (!audioInitialized) {
+                    e.preventDefault();
+                    await initializeAudio();
+                }
+            }, { passive: false });
+
+            startButton.addEventListener('click', async (e) => {
+                e.preventDefault();
+                await initializeAudio();
+            }, { once: true });
+
+            // Add visual feedback for mobile users
+            const startScreenElement = document.getElementById('start-screen');
+            startScreenElement.addEventListener('touchstart', () => {
+                startScreenElement.style.backgroundColor = 'rgba(0, 0, 0, 0.8)';
+                setTimeout(() => {
+                    startScreenElement.style.backgroundColor = 'rgba(0, 0, 0, 0.95)';
+                }, 100);
+            });
 
             // --- Three.js Visualizer Setup ---
             let scene, camera, renderer, analyserNode; 
@@ -450,7 +584,46 @@
             function playUserLoop() { /* ... (same) ... */ if (!audioInitialized || userPattern.length === 0) { console.warn("No user pattern to play or audio not ready."); return; } console.log("Attempting to play user loop with pattern:", JSON.stringify(userPattern)); stopAllBeats(false); if (userBeatPart) userBeatPart.dispose(); userBeatPart = new Tone.Part((time, value) => { console.log("User loop event:", time, value); triggerDrumSound(value.sound, false, time); }, userPattern).start(0); userBeatPart.loop = true; userBeatPart.loopEnd = "1m"; Tone.Transport.start(); playLoopBtn.classList.add('active-loop'); console.log("Playing user loop. Transport state:", Tone.Transport.state); }
             function stopUserLoop(clearActiveButton = true) { /* ... (same) ... */ if (userBeatPart) { userBeatPart.stop(0); userBeatPart.dispose(); userBeatPart = null; console.log("User loop stopped."); } if (clearActiveButton) { playLoopBtn.classList.remove('active-loop'); } }
             function clearUserLoop() { /* ... (same) ... */ stopUserLoop(); userPattern = []; playLoopBtn.disabled = true; clearLoopBtn.disabled = true; playLoopBtn.classList.remove('active-loop'); console.log("User loop cleared."); }
-            function playPresetBeat(mainGenre, subGenre, buttonElement) { /* ... (same) ... */ if (!audioInitialized) { console.warn("playPresetBeat called before audio initialized."); return; } const presetData = allPresetBeats[mainGenre]?.[subGenre]; if (!presetData) { console.warn(`Preset beat for ${mainGenre} -> ${subGenre} not found.`); return; } stopAllBeats(false); if (presetData.drums) { const drumEvents = presetData.drums.map(note => ({time: note.t, sound: note.s})); currentDrumPart = new Tone.Part((time, value) => { triggerDrumSound(value.sound, false, time); }, drumEvents).start(0); currentDrumPart.loop = true; currentDrumPart.loopEnd = "1m"; } if (presetData.melody) { const melodyEvents = presetData.melody.map(note => ({time: note.t, note: note.n, duration: note.d})); currentMelodyPart = new Tone.Part((time, value) => { mainSynth.triggerAttackRelease(value.note, value.duration, time); }, melodyEvents).start(0); currentMelodyPart.loop = true; currentMelodyPart.loopEnd = "1m"; } Tone.Transport.start(); if (activePresetButton) activePresetButton.classList.remove('active-preset'); buttonElement.classList.add('active-preset'); activePresetButton = buttonElement; console.log(`Playing preset: ${mainGenre} - ${subGenre}`); }
+            function playPresetBeat(mainGenre, subGenre, buttonElement) {
+                if (!audioInitialized) {
+                    console.warn("playPresetBeat called before audio initialized.");
+                    return;
+                }
+                const presetData = allPresetBeats[mainGenre]?.[subGenre];
+                if (!presetData) {
+                    console.warn(`Preset beat for ${mainGenre} -> ${subGenre} not found.`);
+                    return;
+                }
+                stopAllBeats(false);
+                
+                // Ensure Transport is running
+                if (Tone.Transport.state !== "started") {
+                    Tone.Transport.start();
+                }
+                
+                if (presetData.drums) {
+                    const drumEvents = presetData.drums.map(note => ({time: note.t, sound: note.s}));
+                    currentDrumPart = new Tone.Part((time, value) => {
+                        triggerDrumSound(value.sound, false, time);
+                    }, drumEvents).start(0);
+                    currentDrumPart.loop = true;
+                    currentDrumPart.loopEnd = "1m";
+                }
+                
+                if (presetData.melody) {
+                    const melodyEvents = presetData.melody.map(note => ({time: note.t, note: note.n, duration: note.d}));
+                    currentMelodyPart = new Tone.Part((time, value) => {
+                        mainSynth.triggerAttackRelease(value.note, value.duration, time);
+                    }, melodyEvents).start(0);
+                    currentMelodyPart.loop = true;
+                    currentMelodyPart.loopEnd = "1m";
+                }
+                
+                if (activePresetButton) activePresetButton.classList.remove('active-preset');
+                buttonElement.classList.add('active-preset');
+                activePresetButton = buttonElement;
+                console.log(`Playing preset: ${mainGenre} - ${subGenre}`);
+            }
             function stopAllBeats(clearActiveButtons = true) { /* ... (same) ... */ if (currentDrumPart) { currentDrumPart.stop(0).dispose(); currentDrumPart = null; } if (currentMelodyPart) { currentMelodyPart.stop(0).dispose(); currentMelodyPart = null; } if (clearActiveButtons && activePresetButton) { activePresetButton.classList.remove('active-preset'); activePresetButton = null; } stopUserLoop(clearActiveButtons); console.log("All beats stopped."); }
             recordLoopBtn.addEventListener('click', toggleRecording); playLoopBtn.addEventListener('click', playUserLoop); clearLoopBtn.addEventListener('click', clearUserLoop);
             window.addEventListener('keydown', (e) => { /* ... (same) ... */ if (!audioInitialized) return; if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable) { return; } const key = e.key.toLowerCase(); const activeElement = document.activeElement; if ( (key === 'enter' || key === ' ') && activeElement && activeElement.tagName === 'BUTTON') { return; } if (keySoundMap[key]) { e.preventDefault(); const soundOrNote = keySoundMap[key]; if (typeof soundOrNote === 'string') { triggerDrumSound(soundOrNote, true); const padEl = document.querySelector(`.sound-pad[data-key="${key}"]`); if(padEl) { padEl.classList.add('temp-active'); setTimeout(() => padEl.classList.remove('temp-active'), 100); } } else if (typeof soundOrNote === 'object' && soundOrNote.type === 'synth') { mainSynth.triggerAttackRelease(soundOrNote.note, "8n"); if (soundOrNote.element) { soundOrNote.element.classList.add('temp-active'); setTimeout(() => soundOrNote.element.classList.remove('temp-active'), 100); } } } });
@@ -459,20 +632,70 @@
             // Add touch event handling for mobile
             document.addEventListener('touchstart', (e) => {
                 if (!audioInitialized) return;
+                
                 const touch = e.touches[0];
                 const element = document.elementFromPoint(touch.clientX, touch.clientY);
-                if (element && element.classList.contains('sound-pad')) {
-                    const sound = element.dataset.sound;
-                    if (sound) {
-                        triggerDrumSound(sound, true);
-                    }
-                } else if (element && element.classList.contains('synth-key')) {
-                    const note = element.dataset.note;
-                    if (note) {
-                        mainSynth.triggerAttackRelease(note, "8n");
+                
+                if (element) {
+                    if (element.classList.contains('preset-btn')) {
+                        const mainGenre = element.dataset.mainGenre;
+                        const subGenre = element.dataset.subGenre;
+                        if (mainGenre && subGenre) {
+                            playPresetBeat(mainGenre, subGenre, element);
+                        }
+                    } else if (element.classList.contains('viz-btn')) {
+                        const vizType = element.dataset.viz;
+                        if (vizType) {
+                            currentViz = vizType;
+                            document.querySelectorAll('.viz-btn').forEach(btn => btn.classList.remove('active-viz'));
+                            element.classList.add('active-viz');
+                            setupVisualizer();
+                        }
                     }
                 }
             }, { passive: true });
+
+            // Improve visualizer performance for mobile
+            function initBaseThreeJS() {
+                if (!visualizerContainer) {
+                    console.error("Visualizer container not found!");
+                    return null;
+                }
+                
+                const aspect = visualizerContainer.clientWidth / visualizerContainer.clientHeight;
+                camera = new THREE.PerspectiveCamera(75, aspect, 0.1, 2000);
+                camera.position.set(0, 1, 7);
+                
+                renderer = new THREE.WebGLRenderer({
+                    canvas: document.getElementById('visualizer-canvas'),
+                    antialias: false, // Disable antialiasing for better performance
+                    alpha: true,
+                    powerPreference: 'high-performance'
+                });
+                
+                renderer.setSize(visualizerContainer.clientWidth, visualizerContainer.clientHeight);
+                // Further limit pixel ratio for mobile
+                renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.0));
+                renderer.setClearColor(0x000000, 0);
+                
+                // Use smaller FFT size for mobile
+                analyserNode = new Tone.Analyser('fft', 32);
+                Tone.getDestination().connect(analyserNode);
+                
+                return { camera, renderer, analyserNode };
+            }
+
+            // Add visual feedback for touch interactions
+            document.querySelectorAll('.preset-btn, .viz-btn, .loop-btn').forEach(button => {
+                button.addEventListener('touchstart', () => {
+                    button.style.transform = 'scale(0.95)';
+                    button.style.transition = 'transform 0.1s';
+                }, { passive: true });
+                
+                button.addEventListener('touchend', () => {
+                    button.style.transform = 'scale(1)';
+                }, { passive: true });
+            });
         });
     </script>
 </body>
