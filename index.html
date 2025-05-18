@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EDM Beat Factory - Advanced Visuals</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0F172A; /* Even darker Slate Blue */
+            color: #E2E8F0; /* Lighter Slate Gray */
+            overflow-x: hidden;
+        }
+        .font-arcade {
+            font-family: 'Press Start 2P', cursive;
+        }
+        .main-title-font { /* Specific class for main titles */
+            font-family: 'Press Start 2P', cursive;
+            color: #A78BFA; /* Lighter Purple Accent */
+        }
+        .control-panel-section {
+            background-color: #1E293B; /* Darker Slate */
+            border-radius: 0.75rem;
+            padding: 1.25rem; 
+            margin-bottom: 1.25rem;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+            border: 1px solid #334155; /* Slate Border */
+        }
+        .section-title {
+            font-family: 'Inter', sans-serif;
+            font-weight: 700; /* Bolder section titles */
+            color: #94A3B8; /* Medium Slate Gray */
+            text-transform: uppercase;
+            letter-spacing: 0.075em; /* Wider spacing */
+            font-size: 0.8rem; 
+            border-bottom: 1px solid #334155;
+            padding-bottom: 0.6rem;
+            margin-bottom: 1.1rem;
+        }
+
+        .sound-pad, .synth-key, .preset-btn, .loop-btn, .viz-btn { 
+            background-color: #334155; /* Slate Button Base */
+            border: 1px solid #475569; /* Lighter Slate Border */
+            color: #CBD5E1; 
+            font-weight: 600; 
+            border-radius: 0.375rem; 
+            transition: all 0.15s ease-in-out;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.625rem; 
+            font-size: 0.7rem; /* Slightly smaller for more buttons */
+        }
+        .sound-pad, .synth-key {
+             aspect-ratio: 1 / 1; 
+             min-height: 45px;
+             font-size: 0.8rem; 
+        }
+        .preset-btn, .loop-btn, .viz-btn { 
+            min-height: 38px; 
+            text-align: center;
+            line-height: 1.2; /* Ensure text fits */
+        }
+
+        .sound-pad:hover, .synth-key:hover, .preset-btn:hover, .loop-btn:hover, .viz-btn:hover {
+            background-color: #475569; 
+            border-color: #64748B;
+            transform: translateY(-2px); 
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+        .sound-pad:active, .synth-key:active, .preset-btn:active, .loop-btn:active, .viz-btn:active {
+            background-color: #8B5CF6; 
+            border-color: #7C3AED;
+            color: #FFFFFF;
+            transform: translateY(0px);
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
+        }
+        .preset-btn.active-preset, .loop-btn.active-loop, .viz-btn.active-viz { 
+            background-color: #8B5CF6; 
+            border-color: #7C3AED; 
+            color: #FFFFFF;
+            box-shadow: 0 0 15px rgba(139, 92, 246, 0.5);
+        }
+        
+        .loop-btn#record-loop-btn.recording {
+            background-color: #F43F5E; /* Rose Red for recording */
+            border-color: #E11D48;
+            color: #FFFFFF;
+            animation: pulse-red 1.5s infinite;
+        }
+        @keyframes pulse-red {
+            0% { box-shadow: 0 0 0 0 rgba(244, 63, 94, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(244, 63, 94, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(244, 63, 94, 0); }
+        }
+
+        #visualizer-container { 
+            background-color: #020617; /* Almost Black for visualizer bg */
+            border-radius: 0.5rem;
+            overflow: hidden; 
+            border: 2px solid #8B5CF6; 
+            box-shadow: 0 0 25px rgba(139, 92, 246, 0.4); /* Enhanced glow */
+        }
+        #visualizer-canvas { display: block; width: 100%; height: 100%; }
+
+        .btn-primary { 
+            background-color: #8B5CF6; color: white; padding: 0.625rem 1.25rem;
+            border-radius: 0.375rem; font-weight: 600; transition: all 0.2s;
+            border: 1px solid #7C3AED;
+        }
+        .btn-primary:hover { background-color: #7C3AED; box-shadow: 0 4px 10px rgba(139, 92, 246, 0.3); transform: translateY(-1px); }
+        .btn-danger { background-color: #F43F5E; border: 1px solid #E11D48; }
+        .btn-danger:hover { background-color: #E11D48; box-shadow: 0 4px 10px rgba(244, 63, 94, 0.3); transform: translateY(-1px); }
+        
+        input[type="range"] {
+            -webkit-appearance: none; appearance: none; width: 100%; height: 10px; 
+            background: #334155; border-radius: 5px; cursor: pointer; outline: none;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none; appearance: none; width: 20px; height: 20px; 
+            background: #A78BFA; border-radius: 50%; border: 3px solid #1E293B; 
+            cursor: pointer; transition: background 0.15s ease-in-out;
+        }
+        input[type="range"]::-moz-range-thumb {
+            width: 20px; height: 20px; background: #A78BFA; border-radius: 50%;
+            border: 3px solid #1E293B; cursor: pointer; transition: background 0.15s ease-in-out;
+        }
+        input[type="range"]::-webkit-slider-thumb:hover,
+        input[type="range"]::-moz-range-thumb:hover { background: #C4B5FD; } 
+
+        ::-webkit-scrollbar { width: 12px; }
+        ::-webkit-scrollbar-track { background: #1E293B; }
+        ::-webkit-scrollbar-thumb { background: #475569; border-radius: 6px; border: 3px solid #1E293B; }
+        ::-webkit-scrollbar-thumb:hover { background: #64748B; }
+        html, body { height: 100%; margin: 0; }
+        .main-container { min-height: 100vh; }
+    </style>
+</head>
+<body class="flex flex-col items-center justify-start p-2 sm:p-4 main-container">
+
+    <div id="start-screen" class="fixed inset-0 bg-black bg-opacity-95 flex flex-col items-center justify-center z-50 p-4">
+        <h1 class="text-4xl sm:text-5xl md:text-6xl main-title-font mb-10 text-center">EDM Beat Factory</h1>
+        <button id="start-button" class="main-title-font text-xl sm:text-2xl bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-6 sm:py-4 sm:px-8 rounded-lg shadow-xl transform hover:scale-105 transition-transform duration-150 border-2 border-purple-400 hover:border-purple-300">
+            Initialize Audio Core
+        </button>
+        <p class="mt-8 text-gray-400 text-xs sm:text-sm font-['Inter']">Click or press any key to engage audio systems.</p>
+    </div>
+
+    <div id="app-content" class="w-full max-w-7xl hidden">
+        <header class="text-center my-6 md:my-8">
+            <h1 class="text-3xl md:text-4xl main-title-font">EDM Beat Factory</h1>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+            <div class="lg:col-span-4 space-y-4">
+                <section class="control-panel-section">
+                    <h2 class="section-title">Drum Matrix</h2>
+                    <div class="grid grid-cols-3 gap-2">
+                        <button id="kick-pad" data-sound="kick" data-key="q" class="sound-pad">KICK <span class="text-xs opacity-75">(Q)</span></button>
+                        <button id="snare-pad" data-sound="snare" data-key="w" class="sound-pad">SNARE <span class="text-xs opacity-75">(W)</span></button>
+                        <button id="hihat-pad" data-sound="hihat" data-key="e" class="sound-pad">HIHAT <span class="text-xs opacity-75">(E)</span></button>
+                        <button id="clap-pad" data-sound="clap" data-key="a" class="sound-pad">CLAP <span class="text-xs opacity-75">(A)</span></button>
+                        <button id="tom-pad" data-sound="tom" data-key="s" class="sound-pad">TOM <span class="text-xs opacity-75">(S)</span></button>
+                        <button id="cymbal-pad" data-sound="cymbal" data-key="d" class="sound-pad">CYMBAL <span class="text-xs opacity-75">(D)</span></button>
+                    </div>
+                </section>
+
+                <section class="control-panel-section">
+                    <h2 class="section-title">Melodic Input</h2>
+                    <div class="grid grid-cols-4 gap-1">
+                        <button class="synth-key" data-note="C4" data-key="z">C4<span class="text-xs opacity-75">(Z)</span></button>
+                        <button class="synth-key" data-note="D4" data-key="x">D4<span class="text-xs opacity-75">(X)</span></button>
+                        <button class="synth-key" data-note="E4" data-key="c">E4<span class="text-xs opacity-75">(C)</span></button>
+                        <button class="synth-key" data-note="F4" data-key="v">F4<span class="text-xs opacity-75">(V)</span></button>
+                        <button class="synth-key" data-note="G4" data-key="b">G4<span class="text-xs opacity-75">(B)</span></button>
+                        <button class="synth-key" data-note="A4" data-key="n">A4<span class="text-xs opacity-75">(N)</span></button>
+                        <button class="synth-key" data-note="B4" data-key="m">B4<span class="text-xs opacity-75">(M)</span></button>
+                        <button class="synth-key" data-note="C5" data-key=",">C5<span class="text-xs opacity-75">(,)</span></button>
+                    </div>
+                </section>
+
+                 <section class="control-panel-section">
+                    <h2 class="section-title">Rhythm Presets</h2>
+                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                        <button data-genre="house" class="preset-btn">House</button>
+                        <button data-genre="techno" class="preset-btn">Techno</button>
+                        <button data-genre="dubstep" class="preset-btn">Dubstep</button>
+                        <button data-genre="trance" class="preset-btn">Trance</button>
+                        <button data-genre="trap" class="preset-btn">Trap EDM</button>
+                        <button data-genre="future" class="preset-btn">Future Bass</button>
+                        <button data-genre="moombahton" class="preset-btn">Moombahton</button>
+                        <button data-genre="bigroom" class="preset-btn">Big Room</button>
+                        <button data-genre="electro" class="preset-btn">Electro</button>
+                        <button data-genre="groove" class="preset-btn">GrooveHouse</button>
+                        <button data-genre="boombap" class="preset-btn">Boom Bap</button>
+                        <button data-genre="traprap" class="preset-btn">Trap Rap</button>
+                        <button id="preset-stop" class="preset-btn btn-danger col-span-full">Stop Rhythm</button>
+                    </div>
+                </section>
+                
+                <section class="control-panel-section">
+                    <h2 class="section-title">User Loop Station</h2>
+                    <div class="grid grid-cols-3 gap-2">
+                        <button id="record-loop-btn" class="loop-btn col-span-1">Record</button>
+                        <button id="play-loop-btn" class="loop-btn col-span-1" disabled>Play</button>
+                        <button id="clear-loop-btn" class="loop-btn col-span-1 btn-danger" disabled>Clear</button>
+                    </div>
+                </section>
+                
+                <section class="control-panel-section">
+                    <h2 class="section-title">Visualizer Select</h2>
+                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-2"> {/* Adjusted for more buttons */}
+                        <button id="viz-shapes-btn" data-viz="shapes" class="viz-btn active-viz">Shapes</button>
+                        <button id="viz-tunnel-btn" data-viz="tunnel" class="viz-btn">Tunnel</button>
+                        <button id="viz-bars-btn" data-viz="bars" class="viz-btn">Bars</button>
+                        <button id="viz-twist-tunnel-btn" data-viz="twistTunnel" class="viz-btn">Twist Tunnel</button>
+                        <button id="viz-fractal-tree-btn" data-viz="fractalTree" class="viz-btn">Fractal Tree</button>
+                    </div>
+                </section>
+
+                 <section class="control-panel-section">
+                    <h2 class="section-title">Master Transport</h2>
+                    <div class="space-y-3">
+                        <div class="w-full">
+                             <label for="bpm-slider" class="block mb-1 text-xs font-medium text-gray-400">TEMPO: <span id="bpm-value" class="text-purple-400 font-semibold">120</span> BPM</label>
+                             <input type="range" id="bpm-slider" min="50" max="220" value="120">
+                        </div>
+                        <button id="toggle-metronome" class="btn-primary w-full text-sm">METRONOME: OFF</button>
+                    </div>
+                </section>
+            </div>
+
+            <div class="lg:col-span-8 control-panel-section" style="min-height: 400px; height: 80vh; max-height: 900px;">
+                 <h2 id="visualizer-title" class="section-title text-center">Visual Core: Shapes</h2>
+                <div id="visualizer-container" class="w-full h-[calc(100%-2.5rem)]">
+                    <canvas id="visualizer-canvas"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- Global State & Tone.js Setup (same as before) ---
+            let audioInitialized = false;
+            const startScreen = document.getElementById('start-screen');
+            const startButton = document.getElementById('start-button');
+            const appContent = document.getElementById('app-content');
+            let kick, snare, hihat, clap, tom, cymbal, synth;
+            let metronomeLoop, metronomeOn = false;
+            let currentBeatPart, activePresetButton = null;
+            let isRecording = false;
+            let userPattern = []; 
+            let userBeatPart = null; 
+            const recordLoopBtn = document.getElementById('record-loop-btn');
+            const playLoopBtn = document.getElementById('play-loop-btn');
+            const clearLoopBtn = document.getElementById('clear-loop-btn');
+            const presetBeats = { /* ... (Preset beats definitions - unchanged) ... */ house: [{t:"0:0:0",s:"kick"},{t:"0:0:2",s:"hihat"},{t:"0:1:0",s:"snare"},{t:"0:1:0",s:"hihat"},{t:"0:1:2",s:"hihat"},{t:"0:2:0",s:"kick"},{t:"0:2:2",s:"hihat"},{t:"0:3:0",s:"snare"},{t:"0:3:0",s:"hihat"},{t:"0:3:2",s:"hihat"}], techno: [{t:"0:0:0",s:"kick"},{t:"0:0:2",s:"hihat"},{t:"0:1:0",s:"kick"},{t:"0:1:2",s:"hihat"},{t:"0:1:2",s:"snare"},{t:"0:2:0",s:"kick"},{t:"0:2:2",s:"hihat"},{t:"0:3:0",s:"kick"},{t:"0:3:2",s:"hihat"},{t:"0:3:2",s:"snare"}], dubstep: [{t:"0:0:0",s:"kick"},{t:"0:0:3",s:"hihat"},{t:"0:1:0",s:"hihat"},{t:"0:1:2",s:"kick"},{t:"0:1:3",s:"hihat"},{t:"0:2:0",s:"snare"},{t:"0:2:2",s:"hihat"},{t:"0:2:3",s:"hihat"},{t:"0:3:0",s:"hihat"},{t:"0:3:2",s:"kick"},{t:"0:3:3",s:"hihat"}], trance: [{t:"0:0:0",s:"kick"},{t:"0:0:2",s:"hihat"},{t:"0:1:0",s:"kick"},{t:"0:1:2",s:"hihat"},{t:"0:1:0",s:"clap"},{t:"0:2:0",s:"kick"},{t:"0:2:2",s:"hihat"},{t:"0:3:0",s:"kick"},{t:"0:3:2",s:"hihat"},{t:"0:3:0",s:"clap"}], trap: [{t:"0:0:0",s:"kick"},{t:"0:0:0",s:"hihat"},{t:"0:0:1",s:"hihat"},{t:"0:0:2",s:"hihat"},{t:"0:0:3",s:"hihat"},{t:"0:1:0",s:"hihat"},{t:"0:1:1",s:"hihat"},{t:"0:1:2",s:"kick"},{t:"0:1:2",s:"hihat"},{t:"0:1:3",s:"hihat"},{t:"0:2:0",s:"snare"},{t:"0:2:0",s:"hihat"},{t:"0:2:1",s:"hihat"},{t:"0:2:2",s:"hihat"},{t:"0:2:3",s:"hihat"},{t:"0:3:0",s:"hihat"},{t:"0:3:1",s:"hihat"},{t:"0:3:2",s:"kick"},{t:"0:3:2",s:"hihat"},{t:"0:3:3",s:"hihat"}], future: [{t:"0:0:0",s:"kick"},{t:"0:0:3",s:"hihat"},{t:"0:1:0",s:"clap"},{t:"0:1:2",s:"hihat"},{t:"0:2:0",s:"kick"},{t:"0:2:1",s:"kick"},{t:"0:2:3",s:"hihat"},{t:"0:3:0",s:"clap"},{t:"0:3:2",s:"hihat"},{t:"0:3:3",s:"kick"}], moombahton: [{t:"0:0:0",s:"kick"}, {t:"0:0:3",s:"tom"}, {t:"0:1:0",s:"hihat"}, {t:"0:1:2",s:"snare"}, {t:"0:1:3",s:"hihat"},{t:"0:2:0",s:"kick"}, {t:"0:2:2",s:"kick"}, {t:"0:2:3",s:"tom"},{t:"0:3:0",s:"hihat"}, {t:"0:3:2",s:"snare"}, {t:"0:3:3",s:"hihat"}], bigroom: [{t:"0:0:0",s:"kick"}, {t:"0:0:2",s:"hihat"}, {t:"0:0:3",s:"hihat"},{t:"0:1:0",s:"kick"}, {t:"0:1:0",s:"clap"}, {t:"0:1:2",s:"cymbal"}, {t:"0:2:0",s:"kick"}, {t:"0:2:2",s:"hihat"}, {t:"0:2:3",s:"hihat"},{t:"0:3:0",s:"kick"}, {t:"0:3:0",s:"clap"}, {t:"0:3:2",s:"cymbal"}], electro: [{t:"0:0:0",s:"kick"}, {t:"0:0:2",s:"hihat"},{t:"0:1:0",s:"snare"}, {t:"0:1:2",s:"kick"}, {t:"0:1:3",s:"hihat"},{t:"0:2:0",s:"kick"}, {t:"0:2:2",s:"hihat"}, {t:"0:2:2",s:"tom"},{t:"0:3:0",s:"snare"}, {t:"0:3:2",s:"kick"}, {t:"0:3:3",s:"hihat"}], groove: [{t:"0:0:0",s:"kick"}, {t:"0:0:1",s:"hihat"}, {t:"0:0:2",s:"hihat"}, {t:"0:0:3",s:"hihat"},{t:"0:1:0",s:"snare"}, {t:"0:1:1",s:"hihat"}, {t:"0:1:2",s:"kick"}, {t:"0:1:3",s:"hihat"},{t:"0:2:0",s:"kick"}, {t:"0:2:1",s:"hihat"}, {t:"0:2:2",s:"hihat"}, {t:"0:2:3",s:"hihat"},{t:"0:3:0",s:"snare"}, {t:"0:3:1",s:"hihat"}, {t:"0:3:2",s:"kick"}, {t:"0:3:3",s:"hihat"}], boombap: [{t:"0:0:0",s:"kick"}, {t:"0:0:2",s:"hihat"}, {t:"0:1:0",s:"snare"},{t:"0:1:2",s:"hihat"}, {t:"0:1:3",s:"kick"},{t:"0:2:0",s:"kick"}, {t:"0:2:2",s:"hihat"}, {t:"0:2:3",s:"hihat"},{t:"0:3:0",s:"snare"}, {t:"0:3:2",s:"hihat"}], traprap: [{t:"0:0:0",s:"kick"}, {t:"0:0:0",s:"hihat"}, {t:"0:0:1",s:"hihat"}, {t:"0:0:2",s:"hihat"}, {t:"0:0:3",s:"hihat"}, {t:"0:1:0",s:"hihat"}, {t:"0:1:1",s:"hihat"}, {t:"0:1:2",s:"kick"}, {t:"0:1:2",s:"hihat"}, {t:"0:1:3",s:"hihat"},{t:"0:2:0",s:"clap"}, {t:"0:2:0",s:"hihat"}, {t:"0:2:1",s:"hihat"}, {t:"0:2:2",s:"kick"},{t:"0:2:2",s:"hihat"}, {t:"0:2:3",s:"hihat"},{t:"0:3:0",s:"hihat"}, {t:"0:3:1",s:"hihat"}, {t:"0:3:2",s:"hihat"}, {t:"0:3:3",s:"hihat"}, {t:"0:3:3",s:"kick"}] };
+
+            async function initializeAudio() { /* ... (Audio initialization code - unchanged) ... */ if (audioInitialized) return; try { await Tone.start(); console.log("Audio Core Initialized by Tone.start()"); kick = new Tone.MembraneSynth({octaves:5,pitchDecay:0.07,envelope:{attack:0.001,decay:0.4,sustain:0.01,release:0.3}}).toDestination(); snare = new Tone.NoiseSynth({noise:{type:'white',playbackRate:1.5},envelope:{attack:0.002,decay:0.12,sustain:0}}).toDestination(); const snareFilter = new Tone.Filter(1800, "bandpass", -12).toDestination(); snare.connect(snareFilter); hihat = new Tone.MetalSynth({frequency:350,envelope:{attack:0.001,decay:0.04,release:0.01},harmonicity:4.1,modulationIndex:10,resonance:2500,octaves:1.2}).toDestination(); hihat.volume.value = -12; clap = new Tone.NoiseSynth({noise:{type:'pink'},envelope:{attack:0.001,decay:0.08,sustain:0,release:0.03}}).toDestination(); clap.volume.value = -8; tom = new Tone.MembraneSynth({pitchDecay:0.15,octaves:2.5,envelope:{attack:0.002,decay:0.25,sustain:0.01,release:0.15}}).toDestination(); cymbal = new Tone.MetalSynth({frequency:500,envelope:{attack:0.015,decay:0.6,release:0.3},harmonicity:6.1,modulationIndex:28,resonance:5000,octaves:1.8}).toDestination(); cymbal.volume.value = -15; synth = new Tone.PolySynth(Tone.FMSynth, {harmonicity:1.5,modulationIndex:7,envelope:{attack:0.005,decay:0.3,sustain:0.2,release:0.6},modulationEnvelope:{attack:0.005,decay:0.15,sustain:0.05,release:0.3}}).toDestination(); synth.volume.value = -9; const metronomeTick = new Tone.MembraneSynth({octaves:9,pitchDecay:0.005,envelope:{attack:0.001,decay:0.05,sustain:0,release:0.01}}).toDestination(); metronomeTick.volume.value = -15; metronomeLoop = new Tone.Loop(time => { metronomeTick.triggerAttackRelease("C5", "32n", time); }, "4n"); Tone.Transport.bpm.value = 120; audioInitialized = true; console.log("All audio components created."); startScreen.style.display = 'none'; appContent.style.display = 'block'; currentViz = 'shapes'; setupVisualizer(); setTimeout(() => { window.dispatchEvent(new Event('resize')); console.log("Resize event dispatched for visualizer."); }, 150); } catch (error) { console.error("Error during audio initialization:", error); const errorMsg = document.createElement('p'); errorMsg.textContent = "Could not initialize audio. Please refresh and try again, or check browser permissions."; errorMsg.className = "text-red-500 mt-4"; startScreen.appendChild(errorMsg); } }
+            const initScreenInteraction = async () => { /* ... (same) ... */ await initializeAudio(); startButton.removeEventListener('click', initScreenInteraction); startScreen.removeEventListener('click', initScreenInteraction); window.removeEventListener('keydown', initScreenInteractionKey); };
+            const initScreenInteractionKey = async (e) => { /* ... (same) ... */ if (document.activeElement === startButton && (e.key === 'Enter' || e.key === ' ')) { await initializeAudio(); } else if (document.activeElement !== startButton) { await initializeAudio(); } startButton.removeEventListener('click', initScreenInteraction); startScreen.removeEventListener('click', initScreenInteraction); window.removeEventListener('keydown', initScreenInteractionKey);  };
+            startButton.addEventListener('click', initScreenInteraction);
+            startScreen.addEventListener('click', initScreenInteraction); 
+            window.addEventListener('keydown', initScreenInteractionKey); 
+
+            // --- Three.js Visualizer Setup ---
+            let scene, camera, renderer, analyserNode; 
+            let clock = new THREE.Clock();
+            const visualizerContainer = document.getElementById('visualizer-container');
+            const visualizerTitle = document.getElementById('visualizer-title');
+            let currentViz = 'shapes'; 
+            let vizObjects = {}; 
+            let animationFrameId = null;
+
+            function initBaseThreeJS() { /* ... (same) ... */ if (!visualizerContainer) { console.error("Visualizer container not found!"); return null; } const aspect = visualizerContainer.clientWidth / visualizerContainer.clientHeight; camera = new THREE.PerspectiveCamera(75, aspect, 0.1, 2000); camera.position.set(0, 1, 7); renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('visualizer-canvas'), antialias: true, alpha: true }); renderer.setSize(visualizerContainer.clientWidth, visualizerContainer.clientHeight); renderer.setPixelRatio(window.devicePixelRatio); renderer.setClearColor(0x000000, 0); analyserNode = new Tone.Analyser('fft', 128); Tone.getDestination().connect(analyserNode); return { camera, renderer, analyserNode }; }
+            function disposeSceneObjects() { /* ... (same) ... */ if (scene) { while(scene.children.length > 0){ const object = scene.children[0]; if(object.geometry) object.geometry.dispose(); if(object.material) { if (Array.isArray(object.material)) { object.material.forEach(material => material.dispose()); } else { object.material.dispose(); } } scene.remove(object); } } vizObjects = {}; }
+            
+            function setupVisualizer() {
+                if (!audioInitialized) { console.warn("Cannot setup visualizer: Audio not ready."); return; }
+                if (!renderer) { 
+                    const baseComponents = initBaseThreeJS();
+                    if (!baseComponents) return;
+                }
+                
+                disposeSceneObjects(); 
+                scene = new THREE.Scene(); 
+
+                const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+                scene.add(ambientLight);
+                const directionalLight = new THREE.DirectionalLight(0xffffff, 0.9);
+                directionalLight.position.set(5, 10, 7.5);
+                scene.add(directionalLight);
+
+                switch (currentViz) {
+                    case 'shapes': visualizerTitle.textContent = "Visual Core: Shapes"; setupShapesViz(); break;
+                    case 'tunnel': visualizerTitle.textContent = "Visual Core: Ring Tunnel"; setupTunnelViz(); break;
+                    case 'bars': visualizerTitle.textContent = "Visual Core: Freq Bars"; setupBarsViz(); break;
+                    case 'twistTunnel': visualizerTitle.textContent = "Visual Core: Twist Tunnel"; setupTwistTunnelViz(); break;
+                    case 'fractalTree': visualizerTitle.textContent = "Visual Core: Fractal Tree"; setupFractalTreeViz(); break;
+                }
+                if (!animationFrameId) animate(); 
+            }
+            
+            function setupShapesViz() { /* ... (same) ... */ camera.position.set(0, 1, 7); camera.lookAt(new THREE.Vector3(0,0,0)); const pointLight = new THREE.PointLight(0x8B5CF6, 1.5, 100); pointLight.position.set(-5, -2, 5); scene.add(pointLight); const cubeMaterial = new THREE.MeshStandardMaterial({ color: 0xff00ff, emissive: 0x330033, roughness: 0.4, metalness: 0.2 }); const sphereMaterial = new THREE.MeshStandardMaterial({ color: 0x00ffff, roughness: 0.2, metalness: 0.5 }); const torusMaterial = new THREE.MeshStandardMaterial({ color: 0xffff00, roughness: 0.6, metalness: 0.3 }); vizObjects.cube = new THREE.Mesh(new THREE.BoxGeometry(1.5, 1.5, 1.5), cubeMaterial); vizObjects.cube.position.x = -2.5; scene.add(vizObjects.cube); vizObjects.sphere = new THREE.Mesh(new THREE.SphereGeometry(1, 32, 32), sphereMaterial); vizObjects.sphere.position.x = 2.5; scene.add(vizObjects.sphere); vizObjects.torus = new THREE.Mesh(new THREE.TorusGeometry(0.8, 0.3, 16, 100), torusMaterial); vizObjects.torus.position.y = -0.5; scene.add(vizObjects.torus); const particleCount = 300; const particleGeometry = new THREE.BufferGeometry(); const positions = new Float32Array(particleCount * 3); for (let i = 0; i < particleCount * 3; i++) { positions[i] = (Math.random() - 0.5) * 15; } particleGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3)); const particleMaterial = new THREE.PointsMaterial({ color: 0x94A3B8, size: 0.07, transparent: true, opacity: 0.4 }); vizObjects.particles = new THREE.Points(particleGeometry, particleMaterial); scene.add(vizObjects.particles); }
+            function setupTunnelViz() { /* ... (same) ... */ camera.position.set(0, 0, 0); camera.lookAt(new THREE.Vector3(0,0,-1)); vizObjects.rings = []; const ringCount = 30; const ringRadius = 3; const ringSpacing = 2; const ringMaterial = new THREE.MeshBasicMaterial({ wireframe: true, side: THREE.DoubleSide }); for (let i = 0; i < ringCount; i++) { const geometry = new THREE.TorusGeometry(ringRadius, 0.1, 8, 32); const ring = new THREE.Mesh(geometry, ringMaterial.clone()); ring.position.z = -i * ringSpacing; scene.add(ring); vizObjects.rings.push(ring); } vizObjects.tunnelSpeed = 0.1; }
+            function setupBarsViz() { /* ... (same) ... */ camera.position.set(0, 2, 10); camera.lookAt(new THREE.Vector3(0,0,0)); analyserNode.type = 'fft'; analyserNode.size = 128; vizObjects.bars = []; const barCount = analyserNode.size / 2; const barWidth = 0.2; const barSpacing = 0.05; const totalWidth = (barWidth + barSpacing) * barCount; for (let i = 0; i < barCount; i++) { const geometry = new THREE.BoxGeometry(barWidth, 0.1, 0.1); const material = new THREE.MeshStandardMaterial({ color: 0x00ffff }); const bar = new THREE.Mesh(geometry, material); bar.position.x = (i * (barWidth + barSpacing)) - totalWidth / 2 + barWidth / 2; scene.add(bar); vizObjects.bars.push(bar); } }
+
+            // --- Twisting Tunnel Visualizer ---
+            function setupTwistTunnelViz() {
+                camera.position.set(0, 0, 10); // Start further back
+                camera.lookAt(new THREE.Vector3(0,0,0));
+                vizObjects.twistSegments = [];
+                const segmentCount = 40;
+                const segmentLength = 1.5; // Depth of each segment
+                const tunnelRadius = 4;
+                const segmentGeometry = new THREE.BoxGeometry(tunnelRadius * 1.5, tunnelRadius * 1.5, segmentLength); 
+                
+                for (let i = 0; i < segmentCount; i++) {
+                    const material = new THREE.MeshStandardMaterial({ 
+                        color: new THREE.Color().setHSL(i / segmentCount, 0.7, 0.5), 
+                        wireframe: true,
+                        opacity: 0.3 + (i % 5) * 0.1, // Vary opacity for depth
+                        transparent: true
+                    });
+                    const segment = new THREE.Mesh(segmentGeometry, material);
+                    segment.position.z = -i * (segmentLength * 0.8); // Overlap them slightly
+                    scene.add(segment);
+                    vizObjects.twistSegments.push(segment);
+                }
+                vizObjects.twistTunnelSpeed = 5; // Base speed (units per second)
+                vizObjects.twistAngle = 0;
+            }
+
+            // --- Fractal Tree Visualizer ---
+            function setupFractalTreeViz() {
+                camera.position.set(0, 5, 20); // Position to view the tree
+                camera.lookAt(new THREE.Vector3(0, 3, 0)); // Look at the base/center of the tree
+                vizObjects.fractalBranches = new THREE.Group(); // Group to hold all branches
+                scene.add(vizObjects.fractalBranches);
+                vizObjects.maxDepth = 3; // Max recursion depth (keep low for performance)
+                vizObjects.initialBranchLength = 3;
+                // Initial call to generate the tree structure (will be empty until audio triggers growth)
+                // The actual generation will happen in the animate function based on audio
+            }
+
+            function createBranch(parent, length, level, angleY, angleZ, material) {
+                if (level > vizObjects.maxDepth) return;
+
+                const branchGeometry = new THREE.CylinderGeometry(0.1 * (1 - level / (vizObjects.maxDepth + 1)), 0.15 * (1 - level / (vizObjects.maxDepth + 1)), length, 8);
+                const branch = new THREE.Mesh(branchGeometry, material.clone());
+                
+                branch.position.y = length / 2; // Position relative to parent's end
+                
+                const branchGroup = new THREE.Group();
+                branchGroup.add(branch);
+                
+                // Position and orient the new branch group at the end of the parent branch
+                branchGroup.position.y = parent instanceof THREE.Group ? parent.userData.length || 0 : 0; // if parent is a group, it's a sub-branch
+                branchGroup.rotation.y = angleY;
+                branchGroup.rotation.z = angleZ;
+                
+                parent.add(branchGroup);
+                branchGroup.userData.length = length; // Store length for next iteration
+
+                // Store for potential dynamic updates or cleanup if needed
+                if (!vizObjects.allBranches) vizObjects.allBranches = [];
+                vizObjects.allBranches.push(branchGroup);
+
+                return branchGroup; // Return the group containing the branch
+            }
+            
+            let lastTreeUpdateTime = 0;
+            const treeUpdateInterval = 0.5; // seconds
+
+            function animate() {
+                animationFrameId = requestAnimationFrame(animate);
+                const delta = clock.getDelta(); 
+                const elapsedTime = clock.getElapsedTime();
+
+                if (!analyserNode || !audioInitialized || !scene) return; 
+
+                const fftData = analyserNode.getValue(); 
+                const normData = fftData.map(db => Math.max(0, Math.min(1, (db + 100) / 100)));
+                const overallEnergy = normData.reduce((a, b) => a + b, 0) / normData.length;
+                const bassEnergy = normData.slice(0, Math.floor(normData.length * 0.1)).reduce((a,b) => a+b,0) / (Math.floor(normData.length * 0.1) || 1);
+                const midEnergy = normData.slice(Math.floor(normData.length * 0.2), Math.floor(normData.length * 0.5)).reduce((a,b) => a+b,0) / (Math.floor(normData.length * 0.3) || 1);
+                const highEnergy = normData.slice(Math.floor(normData.length * 0.6)).reduce((a,b) => a+b,0) / (Math.floor(normData.length * 0.4) || 1);
+                
+                if (currentViz === 'shapes' && vizObjects.cube) { /* ... (shapes animation - same) ... */ vizObjects.cube.rotation.x += (0.1 + midEnergy * 0.5) * delta; vizObjects.cube.rotation.y += (0.15 + midEnergy * 0.6) * delta; vizObjects.cube.material.emissiveIntensity = overallEnergy * 5; vizObjects.sphere.position.y = bassEnergy * 2 - 1; vizObjects.sphere.scale.setScalar(1 + bassEnergy * 0.5); vizObjects.torus.rotation.z += (0.2 + highEnergy * 1.0) * delta; vizObjects.torus.material.color.setHSL(highEnergy * 0.7, 1, 0.5 + midEnergy * 0.2); vizObjects.particles.rotation.y += 0.05 * delta; vizObjects.particles.material.opacity = Math.min(0.7, 0.1 + overallEnergy * 0.8); camera.position.x = Math.sin(elapsedTime * 0.05) * 0.5; camera.position.z = 7 + Math.cos(elapsedTime * 0.07) * 0.5; camera.lookAt(scene.position); } 
+                else if (currentViz === 'tunnel' && vizObjects.rings) { /* ... (tunnel animation - same) ... */ camera.position.z -= (vizObjects.tunnelSpeed + overallEnergy * 0.3) * delta * 10; vizObjects.rings.forEach((ring, index) => { ring.scale.setScalar(1 + normData[index % normData.length] * 2); ring.material.color.setHSL(normData[index % normData.length] * 0.8, 0.8, 0.6); if (ring.position.z > camera.position.z + 2) { ring.position.z -= vizObjects.rings.length * 2; } }); } 
+                else if (currentViz === 'bars' && vizObjects.bars) { /* ... (bars animation - same) ... */ vizObjects.bars.forEach((bar, i) => { const barHeight = Math.max(0.01, normData[i] * 5); bar.scale.y = barHeight; bar.position.y = barHeight / 2 - 0.5; bar.material.color.setHSL(i / vizObjects.bars.length, 1, 0.5 + normData[i] * 0.5); }); camera.position.x = Math.sin(elapsedTime * 0.03) * 2; camera.lookAt(new THREE.Vector3(0,0,0)); }
+                else if (currentViz === 'twistTunnel' && vizObjects.twistSegments) {
+                    vizObjects.twistAngle += (0.1 + midEnergy * 1.5) * delta;
+                    camera.position.z -= (vizObjects.twistTunnelSpeed + bassEnergy * 10) * delta;
+                    camera.rotation.z = Math.sin(elapsedTime * 0.2) * 0.1; // Gentle camera roll
+
+                    vizObjects.twistSegments.forEach((segment, index) => {
+                        segment.rotation.z = vizObjects.twistAngle + index * 0.1 + bassEnergy * 0.5;
+                        segment.rotation.x = highEnergy * 0.3;
+                        segment.scale.setScalar(0.8 + midEnergy * 0.4);
+                        segment.material.color.setHSL((index / vizObjects.twistSegments.length + elapsedTime * 0.05) % 1, 0.6 + highEnergy * 0.4, 0.4 + midEnergy * 0.3);
+                        if (segment.position.z > camera.position.z + 10) { // Reset segments
+                            segment.position.z -= vizObjects.twistSegments.length * (1.5 * 0.8);
+                        }
+                    });
+                } else if (currentViz === 'fractalTree' && vizObjects.fractalBranches) {
+                    camera.position.x = Math.sin(elapsedTime * 0.02) * 5;
+                    camera.position.y = 5 + Math.cos(elapsedTime * 0.03) * 2;
+                    camera.lookAt(vizObjects.fractalBranches.position);
+
+                    if (elapsedTime - lastTreeUpdateTime > treeUpdateInterval && overallEnergy > 0.1) { // Only update tree periodically and if there's sound
+                        lastTreeUpdateTime = elapsedTime;
+                        // Clear old branches before regrowing
+                        while(vizObjects.fractalBranches.children.length > 0){ 
+                            vizObjects.fractalBranches.remove(vizObjects.fractalBranches.children[0]); 
+                        }
+                        vizObjects.allBranches = []; // Reset tracked branches
+
+                        function growTree(parent, length, level, angleYBase, angleZBase) {
+                            if (level > vizObjects.maxDepth || length < 0.1) return;
+                            
+                            const numBranches = level === 0 ? 1 : (bassEnergy > 0.3 ? 3 : 2); // More branches with bass
+                            const branchMaterial = new THREE.MeshStandardMaterial({
+                                color: new THREE.Color().setHSL( (level / vizObjects.maxDepth + midEnergy * 0.5) % 1, 0.6 + highEnergy*0.4, 0.3 + overallEnergy*0.4),
+                                roughness: 0.7,
+                                metalness: 0.1
+                            });
+
+                            for (let i = 0; i < numBranches; i++) {
+                                const newLength = length * (0.6 + Math.random() * 0.2 + bassEnergy * 0.1);
+                                const angleY = angleYBase + (Math.random() - 0.5) * Math.PI / 2 * (1 - midEnergy);
+                                const angleZ = angleZBase + (i - (numBranches-1)/2) * (Math.PI / (3 + numBranches)) * (1 + highEnergy);
+                                
+                                const newBranchGroup = createBranch(parent, newLength, level, angleY, angleZ, branchMaterial);
+                                if (newBranchGroup) {
+                                     growTree(newBranchGroup, newLength, level + 1, angleY, angleZ);
+                                }
+                            }
+                        }
+                        growTree(vizObjects.fractalBranches, vizObjects.initialBranchLength * (1 + overallEnergy), 0, 0, 0);
+                    }
+                     // Gentle rotation of the whole tree
+                    vizObjects.fractalBranches.rotation.y += 0.05 * delta;
+                }
+
+
+                if (renderer && scene && camera) { renderer.render(scene, camera); }
+            }
+            
+            window.addEventListener('resize', () => { /* ... (same) ... */ if (camera && renderer && visualizerContainer) { const newWidth = visualizerContainer.clientWidth; const newHeight = visualizerContainer.clientHeight; if (newWidth > 0 && newHeight > 0) { camera.aspect = newWidth / newHeight; camera.updateProjectionMatrix(); renderer.setSize(newWidth, newHeight); } else { console.warn("Visualizer container has zero width or height on resize."); } } }, false);
+
+            // --- UI Event Listeners & Audio Logic (mostly same) ---
+            document.querySelectorAll('.sound-pad').forEach(pad => { pad.addEventListener('click', () => { if (!audioInitialized) return; triggerDrumSound(pad.dataset.sound, true); }); });
+            document.querySelectorAll('.synth-key').forEach(key => { key.addEventListener('click', () => { if (!audioInitialized) return; synth.triggerAttackRelease(key.dataset.note, "8n"); }); });
+            const bpmSlider = document.getElementById('bpm-slider'); const bpmValueDisplay = document.getElementById('bpm-value');
+            bpmSlider.addEventListener('input', (e) => { if (!audioInitialized) return; const newBpm = parseInt(e.target.value); Tone.Transport.bpm.value = newBpm; bpmValueDisplay.textContent = newBpm; });
+            const metronomeButton = document.getElementById('toggle-metronome');
+            metronomeButton.addEventListener('click', () => { if (!audioInitialized) return; metronomeOn = !metronomeOn; if (metronomeOn) { Tone.Transport.start(); metronomeLoop.start(0); metronomeButton.textContent = "METRONOME: ON"; metronomeButton.classList.replace('bg-purple-600', 'bg-red-500'); } else { metronomeLoop.stop(); metronomeButton.textContent = "METRONOME: OFF"; metronomeButton.classList.replace('bg-red-500', 'bg-purple-600'); } });
+            document.querySelectorAll('.preset-btn[data-genre]').forEach(button => { button.addEventListener('click', () => { if (!audioInitialized) return; playPresetBeat(button.dataset.genre, button); }); });
+            document.getElementById('preset-stop').addEventListener('click', () => { if (!audioInitialized) return; stopAllBeats(); });
+            document.querySelectorAll('.viz-btn').forEach(button => { button.addEventListener('click', () => { if (!audioInitialized) { console.warn("Audio not ready to change viz."); return; } currentViz = button.dataset.viz; document.querySelectorAll('.viz-btn').forEach(btn => btn.classList.remove('active-viz')); button.classList.add('active-viz'); setupVisualizer(); }); });
+            function triggerDrumSound(sound, manualTrigger = false, time = Tone.now()) { /* ... (same) ... */ if (!audioInitialized || !kick) { console.warn("triggerDrumSound called before synths are ready."); return; } try { switch(sound) { case 'kick': kick.triggerAttackRelease("C1", "8n", time); break; case 'snare': snare.triggerAttackRelease("4n", time); break; case 'hihat': hihat.triggerAttackRelease("16n", time); break; case 'clap': clap.triggerAttackRelease("8n", time); break; case 'tom': tom.triggerAttackRelease("G1", "8n", time); break; case 'cymbal': cymbal.triggerAttackRelease("2n", time); break; } } catch (error) { console.error(`Error playing sound ${sound}:`, error); } if (manualTrigger && isRecording) { recordUserHit(sound); } }
+            function recordUserHit(sound) { /* ... (same) ... */ if (!isRecording) return; if (Tone.Transport.state !== "started") Tone.Transport.start(); const sixteenths = Tone.Time("16n").toSeconds(); const transportTimeSeconds = Tone.Transport.seconds; const quantizedSeconds = Math.round(transportTimeSeconds / sixteenths) * sixteenths; const quantizedTransportTimeBBS = Tone.Time(quantizedSeconds).toBarsBeatsSixteenths(); const parts = quantizedTransportTimeBBS.split(':'); const timeInCurrentBarBBS = `0:${parts[1]}:${parts[2]}`; userPattern.push({ time: timeInCurrentBarBBS, sound: sound }); console.log("Recorded:", { time: timeInCurrentBarBBS, sound: sound }); const padElement = document.querySelector(`.sound-pad[data-sound="${sound}"]`); if(padElement){ padElement.classList.add('temp-active'); setTimeout(() => padElement.classList.remove('temp-active'), 100); } }
+            function toggleRecording() { /* ... (same) ... */ if (!audioInitialized) { console.warn("Audio not ready for recording."); return; } isRecording = !isRecording; if (isRecording) { userPattern = []; Tone.Transport.start(); recordLoopBtn.textContent = "Stop Rec"; recordLoopBtn.classList.add('recording'); playLoopBtn.disabled = true; clearLoopBtn.disabled = true; stopAllBeats(false); console.log("Recording started..."); } else { recordLoopBtn.textContent = "Record"; recordLoopBtn.classList.remove('recording'); console.log("Recording stopped. Pattern:", userPattern); if (userPattern.length > 0) { playLoopBtn.disabled = false; clearLoopBtn.disabled = false; } } }
+            function playUserLoop() { /* ... (same) ... */ if (!audioInitialized || userPattern.length === 0) { console.warn("No user pattern to play or audio not ready."); return; } console.log("Attempting to play user loop with pattern:", JSON.stringify(userPattern)); stopAllBeats(false); if (userBeatPart) userBeatPart.dispose(); userBeatPart = new Tone.Part((time, value) => { console.log("User loop event:", time, value); triggerDrumSound(value.sound, false, time); }, userPattern).start(0); userBeatPart.loop = true; userBeatPart.loopEnd = "1m"; Tone.Transport.start(); playLoopBtn.classList.add('active-loop'); console.log("Playing user loop. Transport state:", Tone.Transport.state); }
+            function stopUserLoop(clearActiveButton = true) { /* ... (same) ... */ if (userBeatPart) { userBeatPart.stop(0); userBeatPart.dispose(); userBeatPart = null; console.log("User loop stopped."); } if (clearActiveButton) { playLoopBtn.classList.remove('active-loop'); } }
+            function clearUserLoop() { /* ... (same) ... */ stopUserLoop(); userPattern = []; playLoopBtn.disabled = true; clearLoopBtn.disabled = true; playLoopBtn.classList.remove('active-loop'); console.log("User loop cleared."); }
+            function playPresetBeat(genre, buttonElement) { /* ... (same) ... */ if (!audioInitialized) { console.warn("playPresetBeat called before audio initialized."); return; } if (!presetBeats[genre]) { console.warn(`Preset beat for ${genre} not found.`); return; } stopAllBeats(false); const eventsForPart = presetBeats[genre].map(note => ({time: note.t, sound: note.s})); currentBeatPart = new Tone.Part((time, value) => { triggerDrumSound(value.sound, false, time); }, eventsForPart).start(0); currentBeatPart.loop = true; currentBeatPart.loopEnd = "1m"; Tone.Transport.start(); if (activePresetButton) activePresetButton.classList.remove('active-preset'); buttonElement.classList.add('active-preset'); activePresetButton = buttonElement; console.log(`Playing preset: ${genre}`); }
+            function stopAllBeats(clearActiveButtons = true) { /* ... (same) ... */ if (currentBeatPart) { currentBeatPart.stop(0); currentBeatPart.dispose(); currentBeatPart = null; if (clearActiveButtons && activePresetButton) { activePresetButton.classList.remove('active-preset'); activePresetButton = null; } console.log("Preset beat stopped."); } stopUserLoop(clearActiveButtons); }
+            recordLoopBtn.addEventListener('click', toggleRecording); playLoopBtn.addEventListener('click', playUserLoop); clearLoopBtn.addEventListener('click', clearUserLoop);
+            const keySoundMap = {}; /* ... (same) ... */ document.querySelectorAll('.sound-pad[data-key]').forEach(pad => { keySoundMap[pad.dataset.key.toLowerCase()] = pad.dataset.sound; }); document.querySelectorAll('.synth-key[data-key]').forEach(sk => { keySoundMap[sk.dataset.key.toLowerCase()] = { type: 'synth', note: sk.dataset.note, element: sk }; });
+            window.addEventListener('keydown', (e) => { /* ... (same) ... */ if (!audioInitialized) return; if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable) { return; } const key = e.key.toLowerCase(); const activeElement = document.activeElement; if ( (key === 'enter' || key === ' ') && activeElement && activeElement.tagName === 'BUTTON') { return; } if (keySoundMap[key]) { e.preventDefault(); const soundOrNote = keySoundMap[key]; if (typeof soundOrNote === 'string') { triggerDrumSound(soundOrNote, true); const padEl = document.querySelector(`.sound-pad[data-key="${key}"]`); if(padEl) { padEl.classList.add('temp-active'); setTimeout(() => padEl.classList.remove('temp-active'), 100); } } else if (typeof soundOrNote === 'object' && soundOrNote.type === 'synth') { synth.triggerAttackRelease(soundOrNote.note, "8n"); if (soundOrNote.element) { soundOrNote.element.classList.add('temp-active'); setTimeout(() => soundOrNote.element.classList.remove('temp-active'), 100); } } } });
+            const style = document.createElement('style'); /* ... (same) ... */ style.innerHTML = `.temp-active { background-color: #8B5CF6 !important; border-color: #7C3AED !important; color: #FFFFFF !important; transform: translateY(0px) !important; box-shadow: inset 0 2px 4px rgba(0,0,0,0.2) !important; }`; document.head.appendChild(style);
+        });
+    </script>
+</body>
+</html>
